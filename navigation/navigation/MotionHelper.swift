@@ -22,14 +22,15 @@ class MotionHelper: NSObject {
     let motionManager = CMMotionManager()
     var timer: Timer!
     var mdBlock:MotionDeviceBlock?
-    static let sampleTime:Int = 100 //mills
+    static let sampleTime: Double = 20.0 //in millisecond (20 = 50Hz)
     
     override init() {
         super.init()
+        self.motionManager.deviceMotionUpdateInterval = 1.0/50.0
         self.motionManager.startAccelerometerUpdates()
         self.motionManager.startGyroUpdates()
         self.motionManager.startMagnetometerUpdates()
-        self.motionManager.startDeviceMotionUpdates()
+        self.motionManager.startDeviceMotionUpdates(using: .xMagneticNorthZVertical)
         
         self.timer = Timer.scheduledTimer(timeInterval: Double(MotionHelper.sampleTime / 1000), target: self, selector: #selector(MotionHelper.update), userInfo: nil, repeats: true)
     }
@@ -42,23 +43,15 @@ class MotionHelper: NSObject {
     @objc func update() {
         var deviceData = DeviceData()
         if let accelerometerData = self.motionManager.accelerometerData {
-            //print(accelerometerData.acceleration.x)
             deviceData.accelerometer = accelerometerData
         }
         if let gyroData = self.motionManager.gyroData {
-            //print(gyroData.rotationRate.x)
             deviceData.gyro = gyroData
         }
         if let magnetometerData = self.motionManager.magnetometerData {
-            //print(magnetometerData.magneticField.x)
             deviceData.magnetic = magnetometerData
         }
         if let deviceMotion = self.motionManager.deviceMotion {
-            //print(deviceMotion.attitude.pitch)
-            //deviceMotion.attitude.quaternion
-            //deviceMotion.attitude.roll
-            //deviceMotion.attitude.rotationMatrix
-            //deviceMotion.gravity
             deviceData.motion = deviceMotion
         }
         
