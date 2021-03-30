@@ -22,7 +22,7 @@ struct iBeacon {
         self.proximityUuid = ""
         self.bluetoothAddress = ""
         self.txPower = -1
-        self.rssi = -1
+        self.rssi = -1000
         self.distance = ""
     }
 }
