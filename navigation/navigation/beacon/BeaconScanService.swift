@@ -11,7 +11,7 @@ import Foundation
 class BeaconScanService {
     var curBeacon:iBeacon?
     var StrongHeading:Double = 800.0
-    var WeekHeading:Double = 800.90
+    var WeekHeading:Double = 800.00
     var Turn:Double = 0.0
     var NowUsedAngle:Double = 0.0
     var step:Double = 0.0
@@ -46,7 +46,7 @@ class BeaconScanService {
     //////////Thresthold Settings
     var WeekBeaconRSSIRemoveStrongBeacon:Double = -87.0 // Week beacon filter threshold
     var BeaconSignalDetectWindow:Int64 = 3000 // Week beacon signal detection time window
-    var MinWeekBeaconRSSINumber:Int = 3 //Min detected week beacon number
+    var MinWeekBeaconRSSINumber:Int = 1 //Min detected week beacon number （for iOS, there only 1 sample for 1 second）
     var StrongBeaconStrongestRSSINumberThreshold:Int = 20
     var BeaconNumber:Int = 15
     var StrongBeaconNumber:Int = 15
@@ -532,13 +532,13 @@ class BeaconScanService {
         }
     }
     
+    // Get the peak of the RSSI series if the beacon is Strong Beacon
     func StoreSignalPeakDetection(_ scannedBeacon:iBeacon, _ NowTime:Int64) {
         //        long nowGetTime = NowGetTime
         if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(scannedBeacon.minor) == 1) {
             if (!(minorNoLongerStore!.contains(scannedBeacon.minor))) {
                 UpdateExistedBeaconSeries(scannedBeacon, NowTime, &StoreScannedBeacon)
                 for (k,v) in StoreScannedBeacon {
-                    //                for (Iterator<Entry<Long, ArrayList>> iter = StoreScannedBeacon.entrySet().iterator() iter.hasNext() ) {
                     var list:[TimeAverageRSSI] = []
                     for i in 0..<v.count {
                         if (v[i].time - NowTime > BeaconSignalDetectWindow) {
