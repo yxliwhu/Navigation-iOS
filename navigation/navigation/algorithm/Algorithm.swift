@@ -17,12 +17,12 @@ class Algorithm
     /*
      Function to calculate the accleration in Z direction
      */
-    func zValueOfAcceleration(_ data:Data, _ invrotationmatrix: [Float]) -> Float{
-        var za:Float
-        za = invrotationmatrix[6]*data.getAccX()+invrotationmatrix[7]*data.getAccY()+invrotationmatrix[8]*data.getAccZ()
-        return za
-    }
-    
+//    func zValueOfAcceleration(_ userAcc: CMAcceleration) -> Float{
+//        var za:Float
+//        za = us
+//        return za
+//    }
+//
     func LatLongToDouble(_ position:LatLng) -> [Double]{
         let Lat = position.latitude
         let Long = position.longitude
