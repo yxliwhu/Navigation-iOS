@@ -10,9 +10,10 @@ import CoreLocation
 ///传出蓝牙当前搜索到的设备信息
 typealias BeaconDataBlock = (_ pData: [CLBeacon]) -> Void
 typealias GPSDataBlock = (_ pData: CLLocation) -> Void
+typealias HeadingDataBlock = (_ pData: CLHeading) -> Void
 
 class IBeaconHelper: NSObject {
-    static let scanUUID = "b19af004-7f2a-4972-8f39-37d26c29cb9e"
+    static let scanUUID = "5C73636D-706F-6C79-FFFE-00000000FFFE"
     static let scanIdentifier = "ibeacon location"
     static let shared = IBeaconHelper()
     
@@ -22,27 +23,33 @@ class IBeaconHelper: NSObject {
     
     var backBeaconDataBlock:BeaconDataBlock?
     var gpsDataBlock:GPSDataBlock?
+    var headingDataBlock:HeadingDataBlock?
     
     override init() {
         super.init()
         locationManager = CLLocationManager()
         locationManager!.delegate = self
+        locationManager!.pausesLocationUpdatesAutomatically = false
         //请求一直允许定位
         locationManager!.requestAlwaysAuthorization()
         let uuid = UUID(uuidString: IBeaconHelper.scanUUID)!
         print(uuid.uuidString)
         beaconRegion = CLBeaconRegion(uuid: uuid, identifier: IBeaconHelper.scanIdentifier)
-        beaconRegion!.notifyEntryStateOnDisplay = true
+        beaconRegion!.notifyEntryStateOnDisplay = false
         beaconSatisfying = CLBeaconIdentityConstraint(uuid: uuid)
         //开始扫描
+    
         locationManager!.startMonitoring(for: beaconRegion!)
         locationManager!.startRangingBeacons(satisfying: beaconSatisfying!)
         
+        
         //gps
         locationManager!.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager!.distanceFilter = 10
-        //locationManager.requestWhenInUseAuthorization()
+        locationManager!.distanceFilter = kCLDistanceFilterNone
         locationManager!.startUpdatingLocation()
+        
+        //Heading
+        locationManager!.startUpdatingHeading()
     }
     
     func setBackBeaconBlock(block:@escaping BeaconDataBlock){
@@ -53,6 +60,9 @@ class IBeaconHelper: NSObject {
         self.gpsDataBlock = block
     }
     
+    func setHeadingDataBlock(block:@escaping HeadingDataBlock){
+        self.headingDataBlock = block
+    }
 }
 
 extension IBeaconHelper:CLLocationManagerDelegate {
@@ -73,6 +83,7 @@ extension IBeaconHelper:CLLocationManagerDelegate {
         guard beacons.count > 0 else { return }
         if let blockBeaconData = backBeaconDataBlock {
             blockBeaconData(beacons)
+            print("The number of beacons is: " + String(beacons.count))
         }
     }
     
@@ -91,6 +102,14 @@ extension IBeaconHelper:CLLocationManagerDelegate {
         let currLocation : CLLocation = locations.last!  // 持续更新
         if let blockGpsData = gpsDataBlock {
             blockGpsData(currLocation)
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading){
+    
+        let currHeading: CLHeading =  newHeading// 持续更新
+        if let blockHeadingData = headingDataBlock {
+            blockHeadingData(currHeading)
         }
     }
 }
