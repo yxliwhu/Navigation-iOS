@@ -12,19 +12,25 @@ class BeaconCoordinates {
         var result:LatLng = LatLng(-1,-1)
         //第0位的1，2，3，4代表一个灯柱上的四个位置，1，2位置放置weakbeacon，3，4位置放置strongbeacon
         // 第5位代表weak或strong beacon
+        
+        //block Z test
+        if(minor==1230010001){result =  LatLng(22.30663909,114.1796612)}
+        if(minor==1230020001){result =  LatLng(22.30663909,114.1796612)}
+        if(minor==2230010001){result =  LatLng(22.3063801,114.1795741)}
+        if(minor==2230020001){result =  LatLng(22.3063801,114.1795741)}
         //最后一位代表当前灯柱
-        if(minor==1230010001){result =  LatLng(22.3602104,114.1136387)}
-        if(minor==1230020001){result =  LatLng(22.3602104,114.1136387)}
-        if(minor==2230010001){result =  LatLng(22.3602104,114.1136387)}
-        if(minor==2230020001){result =  LatLng(22.3602104,114.1136387)}
-        if(minor==3230020001){result =  LatLng(22.3602104,114.1136387)}
-        if(minor==4230020001){result =  LatLng(22.3602104,114.1136387)}
-        if(minor==1230010002){result =  LatLng(22.3605242,114.1141963)}
-        if(minor==1230020002){result =  LatLng(22.3605242,114.1141963)}
-        if(minor==2230010002){result =  LatLng(22.3605242,114.1141963)}
-        if(minor==2230020002){result =  LatLng(22.3605242,114.1141963)}
-        if(minor==3230020002){result =  LatLng(22.3605242,114.1141963)}
-        if(minor==4230020002){result =  LatLng(22.3605242,114.1141963)}
+//        if(minor==1230010001){result =  LatLng(22.3602104,114.1136387)}
+//        if(minor==3203123612){result =  LatLng(22.3602104,114.1136387)}
+//        if(minor==2230010001){result =  LatLng(22.3602104,114.1136387)}
+//        if(minor==2230020001){result =  LatLng(22.3602104,114.1136387)}
+//        if(minor==3230020001){result =  LatLng(22.3602104,114.1136387)}
+//        if(minor==4230020001){result =  LatLng(22.3602104,114.1136387)}
+//        if(minor==1230010002){result =  LatLng(22.3605242,114.1141963)}
+//        if(minor==1230020002){result =  LatLng(22.3605242,114.1141963)}
+//        if(minor==2230010002){result =  LatLng(22.3605242,114.1141963)}
+//        if(minor==2230020002){result =  LatLng(22.3605242,114.1141963)}
+//        if(minor==3230020002){result =  LatLng(22.3605242,114.1141963)}
+//        if(minor==4230020002){result =  LatLng(22.3605242,114.1141963)}
         //Shing Kai Road
         if(minor==1404510001){result =  LatLng(22.333017,114.20452)}
         if(minor==1404520001){result =  LatLng(22.333017,114.20452)}//not used
