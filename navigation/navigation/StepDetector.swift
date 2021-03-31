@@ -13,6 +13,7 @@ class StepDetector {
     var data:Data
     var userHeight:String
     var kalmanPositionDetector:KalmanPositionDetector
+    var MygyroHeading: Float = 0.0
     
     init(_ userHeight:String,_ realtime:Bool){
         self.data = Data()
@@ -80,7 +81,9 @@ class StepDetector {
             
             let axisZAngle = axisConvert[2]
             var MygyroHeading = self.kalmanPositionDetector.getMygyroHeading()
+            print(axisZAngle)
             MygyroHeading = MygyroHeading + axisZAngle //Gyro integration angle
+            self.kalmanPositionDetector.setMygyroHeading(MygyroHeading)
 //            self.kalmanPositionDetector.setMagnHeading(Double(MygyroHeading))
             data.setTurnAnlge(self.kalmanPositionDetector.CalculateGyroMax(self.kalmanPositionDetector.getCurrentTime(), axisZAngle)) //Calculate trun angle and set it to data
             

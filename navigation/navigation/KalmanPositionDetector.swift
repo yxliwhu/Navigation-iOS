@@ -532,8 +532,9 @@ class KalmanPositionDetector {
                 
             }
         }
-        
+
         if (self.initialHeading != 800 && self.initialHeading != -800) {//hillday & is a bug
+            
             if (self.StrongBeaconHeadingIndex == 1) {
                 if (abs(self.initialHeading - self.gyroHeadingUsed) < 30) {
                     /////////need take care compassangle gyroangle range

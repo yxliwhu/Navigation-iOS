@@ -44,7 +44,7 @@ class BeaconScanService {
     var StrongIndex:Bool = false
     var JudgeNowUsedAngleToWrong:Bool = false
     //////////Thresthold Settings
-    var WeekBeaconRSSIRemoveStrongBeacon:Double = -80.0 // Week beacon filter threshold
+    var WeekBeaconRSSIRemoveStrongBeacon:Double = -78.0 // Week beacon filter threshold
     var BeaconSignalDetectWindow:Int64 = 3000 // Week beacon signal detection time window
     var MinWeekBeaconRSSINumber:Int = 2 //Min detected week beacon number （for iOS, there only 1 sample for 1 second）
 //    var StrongBeaconStrongestRSSINumberThreshold:Int = 20
@@ -518,9 +518,10 @@ class BeaconScanService {
             }
         }
     }
-    
+//    var foronce: Bool = true
     func SendHeadingToActivity() {
         JugeIFOutputHeading()/// Judge if beacon heading is the pedestrian heading by compass heading
+        
         if (heading != 800) {
             /*WriteFile.writeTxtToFiles(filePath, fileName + "HeadingService.txt", String.valueOf(heading) + ",index," + indexNow + "\n")*/
             var StrongIndexValue:Double = 0.0

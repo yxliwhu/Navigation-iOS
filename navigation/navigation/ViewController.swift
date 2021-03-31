@@ -80,7 +80,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
         labelUI(label: &self.CounterSys, text: "Step:", x: 120, y: 16)
         labelUI(label: &self.GNSS_Precision, text: "GPS:", x: 120, y: 46)
         labelUI(label: &self.PosLat, text: "Heading:", x: 120, y: 76)
-        self.PosLat.adjustsFontSizeToFitWidth=true
+        PosLat.adjustsFontSizeToFitWidth=true
         
         var setBtn = UIButton(type: .system) as UIButton
         let sx:Int = Int(self.view.bounds.width - 80)
@@ -450,7 +450,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
                 self.stepDetecor?.kalmanPositionDetector.BeaconUsedRecord = true
                 self.stepDetecor?.kalmanPositionDetector.setBeaconUsed(m_beacon)
                 self.stepDetecor?.kalmanPositionDetector.initSensorChange()
-                self.stepDetecor?.kalmanPositionDetector.calculate()
+//                self.stepDetecor?.kalmanPositionDetector.calculate()
                 self.ibeaconScanDataProcess(Int64(indexDelta), m_beacon)
                 
                 if(BeaconPositioningAlgorithm.JugeSingleStrongWeak(m_beacon.minor) == 1){
@@ -529,6 +529,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
             
             if(!self.scanService!.HeadingIndex.isEmpty && self.scanService!.HeadingIndex[0] != 800){
                 stepDetecor!.getDetector().setBeaconHeadVals(Float(self.scanService!.HeadingIndex[0]), self.scanService!.HeadingIndex[1], self.scanService!.HeadingIndex[2])
+                self.scanService!.HeadingIndex[0] = 800
             }
         }
     }
