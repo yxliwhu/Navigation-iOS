@@ -17,7 +17,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
     var beaconHelper = IBeaconHelper.shared
     var motionHelper = MotionHelper.shared
     
-    var curBeacon:iBeacon?
+//    var curBeacon:iBeacon?
     var startTime:Int64 = 0
     var currentTime:Int64 = 0
     var indexPre:Int = 0
@@ -135,12 +135,6 @@ class ViewController: UIViewController , MKMapViewDelegate{
         Route1.subtitle = "GPS"
         
         let Route2 = MKPolyline(coordinates: locationArrayFilter, count: locationArrayFilter.count)
-        for each in 0..<locationArrayFilter.count{
-        let anno = MKPointAnnotation()
-        anno.coordinate = locationArrayFilter[each]
-            mMap!.addAnnotation(anno as MKAnnotation)
-            
-        }
         Route2.title = "Route"
         Route2.subtitle = "Filter"
         let region = MKCoordinateRegion(center: locationArrayFilter[0], span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
@@ -148,6 +142,19 @@ class ViewController: UIViewController , MKMapViewDelegate{
         mMap?.addOverlay(Route1)
         mMap?.addOverlay(Route2)
         
+    }
+    
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        let annotationView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "MyMarker")
+        switch annotation.title!! {
+            case "NowPos":
+                annotationView.markerTintColor = UIColor.green
+            case "GPSPos":
+                annotationView.markerTintColor = UIColor.red
+            default:
+                annotationView.markerTintColor = UIColor.blue
+        }
+        return annotationView
     }
     
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
@@ -191,6 +198,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
         var displayedHeading:Double = 0.0
         var positionNow:CLLocation? = nil
         var CorrectedPos:CLLocation? = nil
+        var GPSLocation:CLLocation? = nil
         var distanceHeanding:Double? = nil
         if let stp = self.stepDetecor {
             positionNow = toMapLocation(stp.getDetector().getPositionNow())
@@ -198,18 +206,18 @@ class ViewController: UIViewController , MKMapViewDelegate{
             displayedHeading = stp.getDetector().getDisplayedHeading()
             distanceHeanding = stp.getDetector().getDistanceHeanding()
             kalmanFiterPos = toMapLocation(stp.getDetector().getKalmanFiterPos())
-            locationArrayGPS.append(stp.getDetector().data.getGPSlocation()!.coordinate)
-            print(stp.getDetector().data.getGPSlocation()!.coordinate)
-            locationArrayFilter.append(positionNow!.coordinate)
+            GPSLocation = stp.getDetector().data.getGPSlocation()!
+            
+            
             if (CorrectedPos != nil && CorrectedPos?.coordinate.latitude != -1.0) {
                 let lat:Double = CorrectedPos!.coordinate.latitude
                 let lon:Double = CorrectedPos!.coordinate.longitude
-                let gtxt = "DLat:" + String(Algorithm.formatDouble(lat)) + " " + "DLon:" + String(Algorithm.formatDouble(lon)) + "," + "Pre:" + String(Algorithm.formatDouble(stp.getDetector().data.getGPSlocation()!.horizontalAccuracy))
+                let gtxt = "DLat:" + String(Algorithm.formatDouble(lat)) + " " + "DLon:" + String(Algorithm.formatDouble(lon)) + "," + "Pre:" + String(Algorithm.formatDouble(GPSLocation!.horizontalAccuracy))
                 self.GNSS_Precision.text = gtxt
                 
             } else {
                 if let _ = stp.getDetector().data.getGPSlocation() {
-                    let gtxt = "Pre:" + String(Algorithm.formatDouble(stp.getDetector().data.getGPSlocation()!.horizontalAccuracy))
+                    let gtxt = "Pre:" + String(Algorithm.formatDouble(GPSLocation!.horizontalAccuracy))
                     self.GNSS_Precision.text = gtxt
                 }
             }
@@ -244,10 +252,13 @@ class ViewController: UIViewController , MKMapViewDelegate{
             ///todo:display location on google map
             
             if (positionNow != nil && positionNow?.coordinate.latitude != -1.0) {
-//                updatePosMK(pos: positionNow!,title: "RawPos1")
+                updatePosMK(pos: positionNow!,title: "NowPos")
+                locationArrayFilter.append(positionNow!.coordinate)
+                print("The value of position now:  " + String(positionNow!.coordinate.latitude) + "," + String(positionNow!.coordinate.longitude))
             }
-            if (kalmanFiterPos != nil && kalmanFiterPos?.coordinate.latitude != -1.0) {
-//                updatePosMK(pos: kalmanFiterPos!,title: "RawPos2")
+            if (GPSLocation != nil && GPSLocation?.coordinate.latitude != -1.0) {
+                locationArrayGPS.append(GPSLocation!.coordinate)
+                updatePosMK(pos: GPSLocation!,title: "GPSPos")
             }
         }
         
@@ -285,8 +296,13 @@ class ViewController: UIViewController , MKMapViewDelegate{
      Add uer's current location marker to the map view
      */
     func updatePosMK(pos:CLLocation,title:String){
-        if let _ = self.posMark {
-            self.mMap!.removeAnnotation(self.posMark!)
+        
+        if let mMap = self.mMap {
+            for marker in mMap.annotations {
+                if (marker.title == title){
+                    mMap.removeAnnotation(marker)
+                }
+            }
         }
         
         let  objectAnnotation = MKPointAnnotation()
@@ -294,9 +310,8 @@ class ViewController: UIViewController , MKMapViewDelegate{
         objectAnnotation.coordinate = pos.coordinate
         //设置点击大头针之后显示的标题
         objectAnnotation.title = title
-        self.posMark = objectAnnotation
         //添加大头针
-        self.mMap!.addAnnotation(self.posMark!)
+        self.mMap!.addAnnotation(objectAnnotation)
         
     }
 
@@ -417,18 +432,25 @@ class ViewController: UIViewController , MKMapViewDelegate{
             }
             
             for tIBeacon in pData {
-                self.curBeacon = self.toCustomIbeacon(tIBeacon)
+                let m_beacon = self.toCustomIbeacon(tIBeacon)
                 if (self.recordData){
-                    self.recordScanningData()
+                    self.recordScanningData(m_beacon)
                 }
                 self.stepDetecor?.kalmanPositionDetector.BeaconUsedRecord = true
-                self.stepDetecor?.kalmanPositionDetector.setBeaconUsed(self.curBeacon!)
+                self.stepDetecor?.kalmanPositionDetector.setBeaconUsed(m_beacon)
                 self.stepDetecor?.kalmanPositionDetector.initSensorChange()
-                let _ = self.stepDetecor?.kalmanPositionDetector.calculate()
-                self.ibeaconScanDataProcess(Int64(indexDelta))
+                self.stepDetecor?.kalmanPositionDetector.calculate()
+                self.ibeaconScanDataProcess(Int64(indexDelta), m_beacon)
+                
+                if(BeaconPositioningAlgorithm.JugeSingleStrongWeak(m_beacon.minor) == 1){
+                    self.stepDetecor?.kalmanPositionDetector.weakBeaconForPositioning(m_beacon, (self.stepDetecor?.kalmanPositionDetector.allDistance)!)
+                }else{
+                    //do sth when stong beacon come in 
+                }
             }
         }
     }
+
     
     /*
      Format the stored BLE file (add nil value to the time gap)
@@ -464,11 +486,11 @@ class ViewController: UIViewController , MKMapViewDelegate{
     /*
      Function to scan and process the BLE
      */
-    func ibeaconScanDataProcess(_ indexDelta:Int64){
-        let scanService = BeaconScanService(self.curBeacon!,self.startTime,self.indexCurrent)
-        scanService.StoreSignalPeakDetection(self.curBeacon!, self.currentTime)
+    func ibeaconScanDataProcess(_ indexDelta:Int64, _ m_beacon: iBeacon){
+        let scanService = BeaconScanService(m_beacon,self.startTime,self.indexCurrent)
+        scanService.StoreSignalPeakDetection(m_beacon, self.currentTime)
         scanService.SignalPeak(self.currentTime)
-        let KeyDistance:[Int64:[Double]] = BeaconPositioningAlgorithm.CalculateDistanceMapByStrongBeacon(self.curBeacon!, scanService.StoreScannedBeacon)
+        let KeyDistance:[Int64:[Double]] = BeaconPositioningAlgorithm.CalculateDistanceMapByStrongBeacon(m_beacon, scanService.StoreScannedBeacon)
         if (KeyDistance.count > 3){
             let StrongBeaconPosXYTemp = BeaconPositioningAlgorithm.CalculatePositionByDistance(KeyDistance)
             let StrongBeaconPosXY:[Double] =  [StrongBeaconPosXYTemp[0], StrongBeaconPosXYTemp[1], StrongBeaconPosXYTemp[2], StrongBeaconPosXYTemp[3]]
@@ -477,12 +499,12 @@ class ViewController: UIViewController , MKMapViewDelegate{
         
         let beaconScanStartTime:Int64 = Int64(Int(self.startTime) + 1000 * self.indexCurrent + 500)
         if (indexDelta < 1) {
-            scanService.UsedputtempBeaconAverageValues(self.curBeacon!.minor, beaconScanStartTime, Double(self.curBeacon!.rssi))
+            scanService.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
         }
         
         if (indexDelta >= 1 && indexDelta < 2) {
             
-            scanService.UsedputtempBeaconAverageValues(self.curBeacon!.minor, beaconScanStartTime, Double(self.curBeacon!.rssi))
+            scanService.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
             
             scanService.updateAverageValues(beaconScanStartTime)
             scanService.BuildStrongBeaconMap()
@@ -502,9 +524,9 @@ class ViewController: UIViewController , MKMapViewDelegate{
     /*
      Store the BLE data to the storage
      */
-    func recordScanningData(){
+    func recordScanningData(_ m_beacon: iBeacon){
         var wsContent = [String]()
-        let line = self.getWsLine(self.curBeacon!.major, self.curBeacon!.minor, self.curBeacon!.rssi, self.startTime, self.currentTime, self.indexPre)
+        let line = self.getWsLine(m_beacon.major, m_beacon.minor, m_beacon.rssi, self.startTime, self.currentTime, self.indexPre)
         wsContent.append(line)
         FileUtils.writeStrings(self.beaconFile, wsContent)
     }

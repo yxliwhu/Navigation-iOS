@@ -44,7 +44,7 @@ class KalmanPositionDetector {
     var BeaconSignalThreshold:Float = -88.0
     var weakMinorRssiIndex = [Int64:[[[Int]]]]()
     var timeWindow:Int = 2
-    var frequency:Int = 1
+    var frequency:Int = 3
     
     var StrongBeaconPosXY = [Double]()
     var PreStrongBeaconPosXY = [Double]()
@@ -283,29 +283,6 @@ class KalmanPositionDetector {
                 self.starttimeNowForRecordPosition = self.CurrentTime // update starttimeNowForRecordPosition in the first time
                 self.UpdatedTimeFirst = false
             }
-            //Set time, filtered position, current step number to a list
-//            let xyTimeStep:[Double] = [Double(self.CurrentTime), xy[0], xy[1], Double(self.data.getStepNumOwn())]
-//            ///If post-Process, need the time to recorded data file
-//            if (self.CurrentTime - self.starttimeNowForRecordPosition < self.TimeWindowRecordTimePositionStep) {
-//                self.StoredPosition.append(xyTimeStep)// Record time, position, step in 4s time window for beacon signal comparision
-//            } else {
-//                self.StoredPosition.append(xyTimeStep) // Add new time, position, step to the list
-//                self.StoredPosition.remove(at:0) // Remove old time, position, step to the list
-//            }
-//
-//            if (self.keyTimeSize.Key != -1) {
-//                if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(self.keyTimeSize.Key) == 1) {
-//                    //Use service detected strong signal point and time of one week beacon combine with recorded surveyor position/step/number for correction
-//                    if (self.selfKey != self.keyTimeSize.Key) {
-//                        self.selfKey = self.keyTimeSize.Key
-//                        self.deltaXY = self.MatchTimeLooKforPosition(self.StoredPosition, self.keyTimeSize)
-//                        self.keyTimeSize = KeyTimeSize()
-//                    }
-//
-//                } else if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(self.keyTimeSize.Key) == 2 || BeaconPositioningAlgorithm.JugeSingleStrongWeak(self.keyTimeSize.Key) == 3) {
-//                    //Use for future vehicle position correction using middle and strong beacon
-//                }
-//            }
         }
         ////todo: End
         ////todo: self part is for step length adjustment using model correction
@@ -327,6 +304,7 @@ class KalmanPositionDetector {
                 //stepLong = StepLenghtAdjustmentByChenMethod(height, DeltaStep)
                 self.AdjuststepLong = Algorithm.StepLenghtAdjustmentByChenMethod(height!, DeltaStep) // Ajust step length by model
                 self.stepLong = self.AdjuststepLong//set adjusted step length to step length
+                print("The value of Step length:  " + String(self.stepLong))
                 // WriteFile.writeTxtToFiles(filePath, fileNameStartTime + "AdjustStepLenghtChen.txt", String.valueOf(AdjuststepLong) + "," + data.getStepNumOwn() + "," + distance + "\n")
                 self.RecordNowTime = true
             }
@@ -350,59 +328,348 @@ class KalmanPositionDetector {
         if (self.stepPre != self.stepNow) {
             self.distanceBeacon = (self.data.getStepNumOwn() - self.StartAdjustStep) * self.AdjuststepLengthBeacon // self is for test, calculate the adjusted distance, compare to real distance
         }
-        
-        ////todo: End the second method to adjust step length
-        
-        // Give the initial vaule to positionNow
-//        if (self.positionNow.latitude == -1 && self.positionNow.longitude == -1){
-//            self.calculatePositionWithDRBeacon(self.data, self.BeaconUsed, self.allDistance, &self.allDistancePast, self.positionPast, self.CurrentTime) //
-//        }else{
-//            if (self.CurrentTime - self.preTimeUsed > 1000){
-//                self.calculatePositionWithDRBeacon(self.data, self.BeaconUsed, self.allDistance, &self.allDistancePast, self.positionPast, self.CurrentTime)
-//                self.data.setStartStep(self.stepNow)
-//                self.preTimeUsed = CurrentTime
-//            }
-//        }
     }
     
     /*
      Main enter point for the position calculation
      */
-    func calculate() -> Bool{
-//        print("Info about BeaconUsed: " + String(self.BeaconUsed.major) + "," + String(self.BeaconUsed.minor))
+    func calculate(){
         self.calculateDistanceChanged(self.data)//Calculate changed distance
-//        print("Info about BeaconUsed: " + String(self.BeaconUsed.major) + "," + String(self.BeaconUsed.minor))
-        if (self.positionNow.latitude != -1) {
-            let allDistancePastUsed = self.allDistancePast
-            //if position is null, means program start, let program enter into to do calculation
-            self.calculatePositionWithDRBeacon(self.data, self.BeaconUsed, self.allDistance, allDistancePastUsed, self.positionPast, self.CurrentTime) // Position calculation entrance
-        } else {
-            if (self.ProgramStart) {
-                self.ProgramStart = getInitialPosition(self.data, self.BeaconUsed, self.allDistance, self.allDistancePast, self.positionPast)
-            }
+        if (self.positionNow.latitude == -1 && self.ProgramStart){
+            self.ProgramStart = getInitialPosition(self.data, self.BeaconUsed, self.allDistance)
+            self.data.setStartStep(self.stepNow)
+            self.preTimeUsed = self.CurrentTime
+        }else{
             if (self.CurrentTime - self.preTimeUsed > 1000) {
                 //if step changed or new week beacon appeared
                 let allDistancePastUsed = self.allDistancePast
-                self.calculatePositionWithDRBeacon(self.data, self.BeaconUsed, self.allDistance, allDistancePastUsed, self.positionPast, self.CurrentTime) // Position calculation entrance
+                self.CalculatePosition(self.data, self.allDistance, allDistancePastUsed, self.positionPast, self.BeaconUsed, self.CurrentTime)
                 self.data.setStartStep(self.stepNow)
                 self.preTimeUsed = self.CurrentTime
+            } else{
+                // Do nothing when the time is less than 1000ms
             }
         }
-        if (self.CurrentTime - self.preTimeUsed > 1000) {
-            self.data.setStartStep(self.stepNow)
-            self.preTimeUsed = self.CurrentTime
-        }
-        return true
     }
     
+    func getInitialPosition(_ data_p:Data, _ BeaconUsed_p:iBeacon, _ DistanceNow:[Double]) -> Bool{
+        if (self.weakBeaconForPositioning(BeaconUsed_p,DistanceNow)){
+            return self.weakBeaconForPositioning(BeaconUsed_p,DistanceNow)
+        }else if (self.strongBeaconforPositioning(BeaconUsed_p)) {
+            return self.strongBeaconforPositioning(BeaconUsed_p)
+        }else if (self.GPSforPositioning(data_p, DistanceNow)){
+            return self.GPSforPositioning(data_p, DistanceNow)
+        } else{
+            return true
+        }
+    }
+    
+    /*
+     Using weak beacon for the Initial positioning
+     */
+    func weakBeaconForPositioning(_ m_beacon: iBeacon, _ DistanceNow:[Double]) -> Bool {
+        var result: Bool = true
+        if (m_beacon.rssi >= Int(self.BeaconSignalThreshold) && BeaconCoordinates.positionFromBeacon(m_beacon.minor).latitude != -1){
+            let WeekBeaconPos = BeaconCoordinates.positionFromBeacon(m_beacon.minor)// get coordinates
+            if (self.weakMinorRssiIndex[m_beacon.minor] != nil && self.weakMinorRssiIndex[m_beacon.minor]!.count >= self.frequency) {//当某个weak beacon在同一个index中有至少三个RSSI大于-88
+                self.positionNow = BeaconCoordinates.positionFromBeacon(m_beacon.minor)
+                self.allDistancePast[0] = DistanceNow[0]
+                self.allDistancePast[1] = DistanceNow[1]
+                self.positionPast = self.positionNow
+                self.KalmanFiterPos = self.positionNow
+                if (self.allBeaconMarker.count == 0) {
+                    self.allBeaconMarker.append(WeekBeaconPos)
+                } else {
+                    var count = 0
+                    for i in  0..<self.allBeaconMarker.count {
+                        if (self.allBeaconMarker[i].equals(WeekBeaconPos)) {
+                            break//如果链表里已经存有这个beacon的位置，就不再往里存放
+                        } else {
+                            count += 1
+                            if (count == self.allBeaconMarker.count) {
+                                //MarkerOptions BeaconMarkerOptions = new MarkerOptions()
+                                self.allBeaconMarker.append(WeekBeaconPos)
+                            }
+                        }
+                    }
+                }
+                result = false
+            }
+        }
+        return result
+    }
+    
+    /*
+     Using Strong beacon for the Initial positioning
+     */
+    func strongBeaconforPositioning (_ m_beacon: iBeacon) -> Bool {
+        var result: Bool = true
+        if (!self.StrongBeaconPosXY.isEmpty && self.StrongBeaconPosXY[0] != 0) {
+            let strongBeaconXY:[Double] = [self.StrongBeaconPosXY[0], self.StrongBeaconPosXY[1]]
+            let strongBeaconXYPrecision:[Double] = [self.StrongBeaconPosXY[2], self.StrongBeaconPosXY[3]]
+            let xy = self.algorithm.DoubleToLatLong(strongBeaconXY)
+            self.positionNow = navigation.LatLng(xy.latitude, xy.longitude)
+            self.positionPast = self.positionNow
+            self.KalmanFiterPos = self.positionNow
+            result = false
+        }
+        return result
+    }
+    
+    /*
+     Using GPS for the Initial positioning
+     */
+    func GPSforPositioning (_ data_p: Data, _ DistanceNow:[Double]) -> Bool{
+        var result: Bool = true
+        if (self.currentIndex > 3) {
+            if (data_p.getGPSlocation()!.coordinate.latitude != -1 && data_p.getGPSlocation()!.coordinate.longitude != -1) {
+                self.positionNow = navigation.LatLng(data_p.getGPSlocation()!.coordinate.latitude, data_p.getGPSlocation()!.coordinate.longitude)
+            }
+            if (self.positionNow.latitude != -1) {
+                self.allDistancePast[0] = DistanceNow[0]
+                self.allDistancePast[1] = DistanceNow[1]
+                self.positionPast = self.positionNow
+                self.KalmanFiterPos = self.positionNow
+            }
+            result = false
+        }
+        return result
+    }
+    
+    func CalculatePosition(_ data_p:Data, _ DistanceNow:[Double],
+                           _ DistancePast: [Double], _ PastPos:LatLng, _ beaconUsed:iBeacon, _ CurrentTime_p:Int64) {
+        
+        if (data_p.getGPSlocation()!.coordinate.latitude != -1) {
+            if (data_p.getGPSlocation()!.horizontalAccuracy <= self.GPSPrecisionLimitedForPDRStrategy) {
+                CalculatePosUseGPSOnly(data_p, DistanceNow, DistancePast)
+            } else {
+                CalculatePosBeaconPDR(beaconUsed, DistanceNow, DistancePast, PastPos)
+            }
+        } else {
+            CalculatePosBeaconPDR(beaconUsed, DistanceNow, DistancePast, PastPos)
+        }
+    }
+
+    func CalculatePosBeaconPDR(_ beaconUsed:iBeacon, _ DistanceNow:[Double],
+                               _ DistancePast:[Double], _ PastPos:LatLng) {
+        
+        if (self.PDRflag) {
+            let xy = self.algorithm.LatLongToDouble(positionNow)
+            let xy_correct:[Double] = [xy[0] + deltaXY[0], xy[1] + deltaXY[1]]
+            self.positionNow = self.algorithm.DoubleToLatLong(xy_correct)
+            self.positionPast = self.positionNow
+            self.allDistancePast[0] = self.allDistance[0]
+            self.allDistancePast[1] = self.allDistance[1]
+            self.PDRflag = false
+        } else {
+            self.positionNow = calculateBeaconDRPosition(PastPos, DistanceNow, DistancePast)
+            self.positionPast = self.positionNow
+            self.allDistancePast[0] = self.allDistance[0]
+            self.allDistancePast[1] = self.allDistance[1]
+        }
+    }
+    
+    
+    func CalculatePosUseGPSOnly(_ data_p:Data, _ DistanceNow:[Double],
+                                _ allDistancePast: [Double]) {
+        if (self.CorrectedPos.latitude != -1 && CorrectedPos.longitude != 0) {
+            //DGPS Position is not null
+            self.positionNow = self.CorrectedPos
+        } else {
+            //Use GPS value
+            self.positionNow = navigation.LatLng(data_p.getGPSlocation()!.coordinate.latitude, data_p.getGPSlocation()!.coordinate.longitude)
+        }
+        self.allDistancePast[0] = DistanceNow[0]
+        self.allDistancePast[1] = DistanceNow[1]
+        self.positionPast = self.positionNow
+    }
+    
+    
+    
+    /*
+     Update the positiong with past locaiton and moving distance
+     */
+    func calculateBeaconDRPosition(_ PastP:LatLng, _ Distance:[Double],
+                                   _ DistancePast:[Double]) ->LatLng{
+        var now:[Double] = [0.0, 0.0]
+        let past = self.algorithm.LatLongToDouble(PastP)// Past Position
+        now[0] = past[0] + Distance[0] - DistancePast[0]//Now Coordinate
+        now[1] = past[1] + Distance[1] - DistancePast[1]//Now Coordinate
+        let result = self.algorithm.DoubleToLatLong(now)
+        return result
+    }
+    
+    
+    
+    /*
+     Calcuate the heading info
+     */
+    func calculateDistanceChanged(_ data_p:Data) {
+        ///todo: Angle fusion using compass filtered angle, gyro cumulative angle and beacon angle
+        if (self.initialHeading == -800) {
+            if (data_p.getCompassFilteredAngle() != 0) {
+                self.gyroHeadingUsed = data_p.getCompassFilteredAngle()//Use the filtered Compass heading
+                self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
+                self.UseBeaconHeading = true // Set it to true, it's a control to use beacon heading to correct initial compass heading
+            }
+        }
+        if (self.initialHeading == 800) {
+            _ = Int((CurrentTime - iniTime) / 1000)
+            var TempCompassAngle:Double
+            if (data_p.getCompassFilteredAngle() < 0) {
+                //if angle exceeds 180, convert it to -180 ~ 180
+                TempCompassAngle = Double(data_p.getCompassFilteredAngle() + 360)
+            } else {
+                //if angle is in the range of (0, 180), keep it
+                TempCompassAngle = Double(data_p.getCompassFilteredAngle())
+            }
+            if (self.goAhead) {
+                self.gyroHeadingUsed = self.gyroHeadingUsed - self.MygyroHeading
+                if (self.MygyroHeading != 0) {
+                    //    WriteFile.writeTxtToFiles(filePath, fileNameStartTime + "7.5_P20test2_Gyro.txt", "gyroHeadingUsed:" + gyroHeadingUsed + ", MygyroHeading:" + MygyroHeading + ",index:" + index + ", step:" + step + "\n")
+                }
+                self.MygyroHeading =  0.0
+                
+            }
+        }
+        
+        if (self.initialHeading != 800 && self.initialHeading != -800) {//hillday & is a bug
+            if (self.StrongBeaconHeadingIndex == 1) {
+                if (abs(self.initialHeading - self.gyroHeadingUsed) < 30) {
+                    /////////need take care compassangle gyroangle range
+                    self.gyroHeadingUsed = self.initialHeading//Use beacon heading and gyro cumulative angle to decide end angle
+                    self.initialHeading = 800 //Set beacon heading to 800
+                    self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
+                    self.UseBeaconHeading = false // Set
+                } else {
+                    if (self.initialHeading > 270 && self.gyroHeadingUsed < 90) {
+                        //if (abs((360.0 - initialHeading) - gyroHeadingUsed) < 30) {
+                        if (abs((360.0 - self.initialHeading) + self.gyroHeadingUsed) < 30) {
+                            if (data_p.getTurnAnlge() < self.BiasOfHeadingBeaconHeadig) {//BiasOfHeadingBeaconHeadig = 30
+                                ///due to the case, when surveyor are in turning, beacon heading occurs
+                                self.gyroHeadingUsed = self.initialHeading//Use beacon heading and gyro cumulative angle to decide end angle
+                                self.initialHeading = 800 //Set beacon heading to 800
+                                self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
+                                self.UseBeaconHeading = false // Set
+                            } else {
+                                // if surveyor are in turning in color, but at same time, beacon heading occurs
+                            }
+                        }
+                    }
+                    if (self.initialHeading < 90 && self.gyroHeadingUsed > 270) {
+                        //if (abs((360.0 - gyroHeadingUsed) - initialHeading) < 30) {
+                        if (abs((360.0 - self.gyroHeadingUsed) + self.initialHeading) < 30) {
+                            if (data_p.getTurnAnlge() < self.BiasOfHeadingBeaconHeadig) {
+                                ///due to the case, when surveyor are in turning, beacon heading occurs
+                                self.gyroHeadingUsed = self.initialHeading//Use beacon heading and gyro cumulative angle to decide end angle
+                                self.initialHeading = 800 //Set beacon heading to 800
+                                self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
+                                self.UseBeaconHeading = false // Set
+                            } else {
+                                // if surveyor are in turning in color, but at same time, beacon heading occurs
+                            }
+                        }
+                    } else {
+                        var TempCompassAngle:Double
+                        if (data_p.getCompassFilteredAngle() < 0) {
+                            //if angle exceeds 180, convert it to -180 ~ 180
+                            TempCompassAngle = Double(data_p.getCompassFilteredAngle() + 360)
+                        } else {
+                            //if angle is in the range of (0, 180), keep it
+                            TempCompassAngle = Double(data_p.getCompassFilteredAngle())
+                        }
+                        let cbb = abs(TempCompassAngle - Double(self.initialHeading))
+                        if ( cbb < Double(abs(self.MygyroHeading - self.initialHeading)) && cbb < 40.0) {
+                            self.gyroHeadingUsed = self.initialHeading//Use beacon heading and gyro cumulative angle to decide end angle
+                            self.initialHeading = 800 //Set beacon heading to 800
+                            self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
+                            self.UseBeaconHeading = false // Set
+                        } else {
+                            
+                        }
+                    }
+                }
+                self.StrongBeaconHeadingIndex = 0
+            }
+            if (self.WeekBeaconHeadingIndex == 1) {
+                if (data_p.getTurnAnlge() < self.BiasOfHeadingBeaconHeadig) {
+                    //if the big turn occurred in the process 6s ~ 12s before now, do following operations
+                    self.gyroHeadingUsed = self.initialHeading//Use beacon heading and gyro cumulative angle to decide end angle
+                    self.initialHeading = 800 //Set beacon heading to 800
+                    self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
+                    self.UseBeaconHeading = false // Set it to false, it's a control to use beacon heading to correct initial compass heading
+                } else {
+                }
+                self.WeekBeaconHeadingIndex = 0
+            }
+            if (self.UseBeaconHeading) {
+                //if in the initial stage, compass heading has big error with beacon heading, enter into self
+                self.gyroHeadingUsed = self.initialHeading // Use beacon heading to correct compass heading
+                self.initialHeading = 800//Set beacon heading to 800
+                self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
+                self.UseBeaconHeading = false // Set it to false, it's a control to use beacon heading to correct initial compass heading
+            } else {
+                
+            }
+            //   initialHeading = 800//Set beacon heading to 800
+        }
+        
+        
+        ///todo: end fusion
+        ///todo: Convert end used angle to -180 ~ 180 from 0 ~ 360
+        if (self.gyroHeadingUsed > 360) {
+            //if exceeds 360, minus 360, keep the angle in the range of 0~360
+            self.gyroHeadingUsed = self.gyroHeadingUsed - 360
+        } else if (self.gyroHeadingUsed < 0) {
+            // if the angle is smaller than 0, add 360, keep the angle in the range of 0~360
+            self.gyroHeadingUsed = self.gyroHeadingUsed + 360
+        }
+        
+        if (self.gyroHeadingUsed > 180) {
+            //if angle exceeds 180, convert it to -180 ~ 180
+            distanceHeanding = Double(gyroHeadingUsed - 360)
+        } else {
+            //if angle is in the range of (0, 180), keep it
+            distanceHeanding = Double(gyroHeadingUsed)
+        }
+        self.stepNow = Double(data_p.getStepNumOwn()) // Get current step number
+        self.stepUsed = stepNow - stepPre   // Calculate current used step number
+        let distnace_N = calculateDistance(stepUsed, distanceHeanding, Double(stepLong))[0] //Calculate changed distance in north
+        
+        let distnace_S = calculateDistance(stepUsed, distanceHeanding, Double(stepLong))[1] //Calculate changed distance in east
+        
+        data_p.setHeading(distanceHeanding) //  Set end used heading
+        //todo: adaptive
+        if (distnace_N != 0 || distnace_S != 0) {
+            let PDRMovedDistance = sqrt(distnace_N * distnace_N + distnace_S * distnace_S)
+            self.PDRPrecisionComputed = Algorithm.CalculatePDRPrecision(self.PDRPrecisionComputed, PDRMovedDistance) //Calculate Current PDR precision
+            self.PDRTotalDistance = self.PDRTotalDistance + PDRMovedDistance
+            self.PDRTotalNE[0] = distnace_N
+            self.PDRTotalNE[1] = distnace_S
+        }
+        //todo: end
+        self.allDistance_N = self.allDistance_N + distnace_N // Cumulative distance in north
+        self.allDistence_S = self.allDistence_S + distnace_S // Cumulative distance in east
+        self.allDistance[0] = self.allDistance_N
+        self.allDistance[1] = self.allDistence_S
+        self.stepPre = self.stepNow //set now step number to pre-step
+    }
+    
+    /*
+     Based on the step num and heading to calcualte the moving distance
+     */
+    func calculateDistance(_ stepUsed:Double, _ headingUsed:Double, _ stepLong:Double)->[Double] {
+        var distanceArray:[Double] = [0.0, 0.0]
+        distanceArray[1] = (stepUsed * stepLong * sin(((headingUsed) / 180) * Double.pi))
+        distanceArray[0] = (stepUsed * stepLong * cos(((headingUsed) / 180) * Double.pi))
+        return distanceArray
+    }
     func setBeaconHeadVals(_ initialHeading:Float, _ StrongBeaconHeadingIndex:Double,_ WeekBeaconHeadingIndex:Double){
         self.initialHeading = initialHeading
         self.StrongBeaconHeadingIndex = StrongBeaconHeadingIndex
         self.WeekBeaconHeadingIndex = WeekBeaconHeadingIndex
         self.DisplayedHeading = initialHeading
     }
-    
-    
     
     func PositionByBeacon(_ centerBeacon:Int64, _ RoadWidth:Double, _ velecity:Double) ->[Double]{
         var xy:[Double] = [0, 0] //initial return position
@@ -418,38 +685,7 @@ class KalmanPositionDetector {
         }
         return xy
     }
-    func  AdaptiveQR(_ beaconUsed:iBeacon, _ Q:Matrix, _ R:inout Matrix, _
-                        kalmanFiterPos:LatLng) ->Bool{
-        var set = false
-        // get coordinates
-        let WeekBeaconPosition = BeaconCoordinates.positionFromBeacon(beaconUsed.minor)
-        let beaconNE = self.algorithm.LatLongToDouble(WeekBeaconPosition)
-        let kalmanFilteredNE = self.algorithm.LatLongToDouble(kalmanFiterPos) //get end position after filter
-        if (kalmanFilteredNE[0] != beaconNE[0]) {
-            //if the current position is not the beacon postion, do following operations
-            let deltaTime = self.CurrentTime - self.data.getGPSGetTime()
-            if (self.Realtime ? (deltaTime < 2000) : (deltaTime > 0)) {
-                //if GPS observation is in 2000ms, use it
-                let GPSPositionLat = self.data.getGPSlocation()!.coordinate.latitude
-                let GPSPositionLon = self.data.getGPSlocation()!.coordinate.longitude
-                let gpsPosition = LatLng(GPSPositionLat, GPSPositionLon)
-                let gpsNE = self.algorithm.LatLongToDouble(gpsPosition)
-                let deltaN = beaconNE[0] - gpsNE[0]//calculate the bias of GPS position and beacon position
-                let deltaE = beaconNE[1] - gpsNE[1]//calculate the bias of GPS position and beacon position
-                let Squar00 = (deltaN) * (deltaN) // calculate the square
-                let Squar11 = (deltaE) * (deltaE) // calculate the square
-                R.set(paramInt1: 0, paramInt2: 0, paramDouble: Squar00) //set to R
-                R.set(paramInt1: 1, paramInt2: 1, paramDouble: Squar11) //set to R
-                set = true
-            }
-            
-            let deltaN = beaconNE[0] - kalmanFilteredNE[0]
-            let deltaE = beaconNE[1] - kalmanFilteredNE[1]
-            _ = (deltaN) * (deltaN)
-            _ = (deltaE) * (deltaE)
-        }
-        return set
-    }
+    
     
     func MatchTimeLooKforPosition(_ StoredPosition:[[Double]],_ KEYTimeSize:KeyTimeSize) -> [Double] {
         let latLngPosBeacon = BeaconCoordinates.positionFromBeacon(KEYTimeSize.Key)// Get week beacon coordinates
@@ -640,398 +876,8 @@ class KalmanPositionDetector {
         
         return Double(Max)
     }
-    
-    func CalculatePredictionAndEndPosNE(_ NE_k:[Double], _ dN:Double, _ dE:Double, _ Sk:Double, _ d_Sk:Double, _ d_PDR:Double, _ angle:Double, _ d_angle:Double)->[Double] {
-        let N_k_1 = NE_k[0] + dN + (1 + d_Sk) * d_PDR * cos(angle + d_angle)
-        let E_k_1 = NE_k[1] + dE + (1 + d_Sk) * d_PDR * sin(angle + d_angle)
-        let result:[Double] = [N_k_1, E_k_1]
-        return result
-    }
-    
-    func SetInitailValue(_ N_Precision:Double, _ E_Precision:Double, _ POS:LatLng)->(Matrix, Matrix)? {
-        _ = self.algorithm.LatLongToDouble(POS)
-        let x0:[[Double]] = [[0],
-                             [0],
-                             [0],
-                             [0]]
-        do{
-            let X_0 = try Matrix(paramArrayOfDouble: x0)
-            let p0:[[Double]] = [[0.25, 0, 0, 0],
-                                 [0, 0.25, 0, 0],
-                                 [0, 0, 0.0002, 0],
-                                 [0, 0, 0, 0.03]]
-            let P0 = try Matrix(paramArrayOfDouble: p0)
-            P0.set(paramInt1: 0, paramInt2: 0, paramDouble: N_Precision * N_Precision)
-            P0.set(paramInt1: 1, paramInt2: 1, paramDouble: E_Precision * E_Precision)
-            
-            self.X_k_1 = X_0
-            self.P_k_1 = P0
-            
-            let Result = (self.X_k_1, self.P_k_1)
-            return Result
-        }catch{
-            
-        }
-        return nil
-    }
-    
-    func calculatePositionWithDRBeacon(_ data_p:Data, _ BeaconUsed_p:iBeacon, _ DistanceNow:[Double], _ DistancePast: [Double], _ PastPos:LatLng, _ CurrentTime_p:Int64) {
-        ///Use week beacon for get initail position
 
-        
-        if (PastPos.latitude != -1) {
-            CalculatePosition(data_p, DistanceNow, DistancePast, PastPos, BeaconUsed, CurrentTime) //Program calculation entrance
-        } else {
-        }
-//        if (self.positionNow.latitude != -1) {
-//            //            addDRBeaconMarkerToMap(positionNow)
-//            //BeaconDRRouteOptions.add(positionNow)//red,PDR
-//        }
-//        if (self.KalmanFiterPos.latitude != -1) {
-//            //            addDRBeaconMarkerToMapfilter(KalmanFiterPos)
-//            //BeaconDRRouteOptionsFilter.add(KalmanFiterPos)//blue, 融合
-//        }
-    }
     
-    func getInitialPosition(_ data_p:Data, _ BeaconUsed_p:iBeacon, _ DistanceNow:[Double], _ DistancePast: [Double], _ PastPos:LatLng) -> Bool{
-        var result: Bool = true
-        // from weak beacon
-//        print("Beacon for positioning:" + String(BeaconUsed_p.minor))
-        if ((BeaconUsed_p.minor != -1) && (BeaconCoordinates.positionFromBeacon(BeaconUsed_p.minor).latitude != -1)) {
-            let WeekBeaconPos = BeaconCoordinates.positionFromBeacon(BeaconUsed_p.minor)// get coordinates
-            if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(BeaconUsed_p.minor) == 1) {
-                // if it's a week beacon
-                if (BeaconUsed_p.rssi > Int(self.BeaconSignalThreshold) && BeaconCoordinates.positionFromBeacon(BeaconUsed_p.minor).latitude != -1) {//BeaconSignalThreshold = -85
-                    if (self.weakMinorRssiIndex[BeaconUsed_p.minor]!.count >= self.frequency) {//当某个weak beacon在同一个index中有至少三个RSSI大于-88
-                        self.positionNow = BeaconCoordinates.positionFromBeacon(BeaconUsed_p.minor)
-                        self.allDistancePast[0] = DistanceNow[0]
-                        self.allDistancePast[1] = DistanceNow[1]
-                        self.positionPast = self.positionNow
-                        self.KalmanFiterPos = self.positionNow
-                        if (self.SetInitial) {
-                            self.BeaconSurveyorDistance = pow(10, (-Double(BeaconUsed_p.rssi) - 87.48) / (14.04)) // Use the model RSSI= -(10*n*ln(d) + 14.04 )
-                            let BeaconN_Precision = 0.0
-                            let BeaconE_Precision = 0.0
-                            self.SetInitailValue(BeaconN_Precision, BeaconE_Precision, self.positionNow) // initail Kalman filter
-                            self.BeaconSurveyorDistance = 0.0
-                            self.SetInitial = false
-                            //todo: adaptive
-                            let WeakBeaconStartPrecision = 0.5 // need use a model to calculate the distance as the precision
-                            self.PDRPrecisionComputed = WeakBeaconStartPrecision // Get initial precision
-                        }
-                        result = false // finish the first start
-                        if (self.allBeaconMarker.count == 0) {
-                            //MarkerOptions BeaconMarkerOptions = new MarkerOptions()
-                            self.allBeaconMarker.append(WeekBeaconPos)
-                        } else {
-                            var count = 0
-                            for i in  0..<self.allBeaconMarker.count {
-                                if (self.allBeaconMarker[i].equals(WeekBeaconPos)) {
-                                    break//如果链表里已经存有这个beacon的位置，就不再往里存放
-                                } else {
-                                    count += 1
-                                    if (count == self.allBeaconMarker.count) {
-                                        //MarkerOptions BeaconMarkerOptions = new MarkerOptions()
-                                        self.allBeaconMarker.append(WeekBeaconPos)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    
-        // from strong beacons
-        if (!self.StrongBeaconPosXY.isEmpty && self.StrongBeaconPosXY[0] != 0) {
-            let strongBeaconXY:[Double] = [self.StrongBeaconPosXY[0], self.StrongBeaconPosXY[1]]
-            let strongBeaconXYPrecision:[Double] = [self.StrongBeaconPosXY[2], self.StrongBeaconPosXY[3]]
-            let xy = self.algorithm.DoubleToLatLong(strongBeaconXY)
-            self.positionNow = navigation.LatLng(xy.latitude, xy.longitude)
-            self.positionPast = self.positionNow
-            self.KalmanFiterPos = self.positionNow
-            if (self.SetInitial) {
-                let N_Precision = self.StrongBeaconPosXY[2]//North precision
-                let E_Precision = self.StrongBeaconPosXY[3]//East precision
-                self.SetInitailValue(N_Precision, E_Precision, self.positionNow) // need to improve
-                self.SetInitial = false
-                //todo: adaptive
-                let StrongBeaconStartPrecision = sqrt(strongBeaconXYPrecision[0] * strongBeaconXYPrecision[0] + strongBeaconXYPrecision[1] * strongBeaconXYPrecision[1]) //Use the strong calculated variance
-                self.PDRPrecisionComputed = StrongBeaconStartPrecision // Set the initial precision for PDR
-            }
-            result = false
-        }
-        
-        // from GPS
-        
-        if (self.currentIndex > 3) {
-            if (self.UseInternalGPS) {
-                if (data_p.getGPSlocation()!.coordinate.latitude != -1 && data_p.getGPSlocation()!.coordinate.longitude != -1) {
-                    self.positionNow = navigation.LatLng(data_p.getGPSlocation()!.coordinate.latitude, data_p.getGPSlocation()!.coordinate.longitude)
-                }
-            } else {
-                if (self.CorrectedPos.latitude != -1) {
-                    self.positionNow = self.CorrectedPos
-                }
-            }
-            if (self.positionNow.latitude != -1) {
-
-                self.allDistancePast[0] = DistanceNow[0]
-                self.allDistancePast[1] = DistanceNow[1]
-                self.positionPast = self.positionNow
-                self.KalmanFiterPos = self.positionNow
-                if (self.SetInitial) {
-                    let N_Precision = 0.707 * data_p.getGPSlocation()!.horizontalAccuracy//North precision
-                    let E_Precision = 0.707 * data_p.getGPSlocation()!.horizontalAccuracy//East precision
-                    self.SetInitailValue(N_Precision, E_Precision, self.positionNow)
-                    self.SetInitial = false
-                    //todo: adaptive
-                    let GPSStartPrecision = data_p.getGPSlocation()!.horizontalAccuracy
-                    self.PDRPrecisionComputed = GPSStartPrecision // Get initial precision
-                }
-
-                result = false
-            }
-        }
-        return result
-    }
-    
-    func CalculatePosition(_ data_p:Data, _ DistanceNow:[Double],
-                           _ DistancePast: [Double], _ PastPos:LatLng, _ beaconUsed:iBeacon, _ CurrentTime_p:Int64) {
-        
-        if (data_p.getGPSlocation()!.coordinate.latitude != -1) {
-            // The condition is user must move
-            if (data_p.getGPSlocation()!.horizontalAccuracy <= self.GPSPrecisionLimitedForPDRStrategy) {
-                CalculatePosUseGPSOnly(data_p, DistanceNow, DistancePast)
-            } else {
-                CalculatePosBeaconPDR(beaconUsed, DistanceNow, DistancePast, PastPos)
-            }
-        } else {
-            CalculatePosBeaconPDR(beaconUsed, DistanceNow, DistancePast, PastPos)
-        }
-        //Do Kalman filter no matter what type observations program has
-//        DoKalmnFilter(CurrentTime)//Beacon  yellow
-    }
-
-    func CalculatePosBeaconPDR(_ beaconUsed:iBeacon, _ DistanceNow:[Double],
-                               _ DistancePast:[Double], _ PastPos:LatLng) {
-        
-        if (self.PDRflag) {
-            let xy = self.algorithm.LatLongToDouble(positionNow)
-            let xy_correct:[Double] = [xy[0] + deltaXY[0], xy[1] + deltaXY[1]]
-            self.positionNow = self.algorithm.DoubleToLatLong(xy_correct)
-            self.positionPast = self.positionNow
-            self.allDistancePast[0] = self.allDistance[0]
-            self.allDistancePast[1] = self.allDistance[1]
-            self.PDRflag = false
-        } else {
-            self.positionNow = calculateBeaconDRPosition(PastPos, DistanceNow, DistancePast)
-            self.positionPast = self.positionNow
-            self.allDistancePast[0] = self.allDistance[0]
-            self.allDistancePast[1] = self.allDistance[1]
-        }
-    }
-    
-    
-    func CalculatePosUseGPSOnly(_ data_p:Data, _ DistanceNow:[Double],
-                                _ allDistancePast: [Double]) {
-        if (self.CorrectedPos.latitude != -1 && CorrectedPos.longitude != 0) {
-            //DGPS Position is not null
-            self.positionNow = self.CorrectedPos
-        } else {
-            //Use GPS value
-            self.positionNow = navigation.LatLng(data_p.getGPSlocation()!.coordinate.latitude, data_p.getGPSlocation()!.coordinate.longitude)
-        }
-        self.allDistancePast[0] = DistanceNow[0]
-        self.allDistancePast[1] = DistanceNow[1]
-        self.positionPast = self.positionNow
-    }
-    
-    
-    
-    /*
-     Update the positiong with past locaiton and moving distance
-     */
-    func calculateBeaconDRPosition(_ PastP:LatLng, _ Distance:[Double],
-                                   _ DistancePast:[Double]) ->LatLng{
-        var now:[Double] = [0.0, 0.0]
-        let past = self.algorithm.LatLongToDouble(PastP)// Past Position
-        now[0] = past[0] + Distance[0] - DistancePast[0]//Now Coordinate
-        now[1] = past[1] + Distance[1] - DistancePast[1]//Now Coordinate
-//        if (self.stepUsed > 0){
-//            print("The distance Changes are: " + String(Distance[0]-DistancePast[0]) + "; " + String(Distance[1] - DistancePast[1]))
-//            print("Step Number is:" + String(self.stepUsed))
-//
-//        }
-        let result = self.algorithm.DoubleToLatLong(now)
-        return result
-    }
-    
-    
-    
-    /*
-     Calcuate the heading info
-     */
-    func calculateDistanceChanged(_ data_p:Data) {
-        ///todo: Angle fusion using compass filtered angle, gyro cumulative angle and beacon angle
-        if (self.initialHeading == -800) {
-            if (data_p.getCompassFilteredAngle() != 0) {
-                self.gyroHeadingUsed = data_p.getCompassFilteredAngle()//Use the filtered Compass heading
-                self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
-                self.UseBeaconHeading = true // Set it to true, it's a control to use beacon heading to correct initial compass heading
-            }
-        }
-        if (self.initialHeading == 800) {
-            _ = Int((CurrentTime - iniTime) / 1000)
-            var TempCompassAngle:Double
-            if (data_p.getCompassFilteredAngle() < 0) {
-                //if angle exceeds 180, convert it to -180 ~ 180
-                TempCompassAngle = Double(data_p.getCompassFilteredAngle() + 360)
-            } else {
-                //if angle is in the range of (0, 180), keep it
-                TempCompassAngle = Double(data_p.getCompassFilteredAngle())
-            }
-            if (self.goAhead) {
-                self.gyroHeadingUsed = self.gyroHeadingUsed - self.MygyroHeading
-                if (self.MygyroHeading != 0) {
-                    //    WriteFile.writeTxtToFiles(filePath, fileNameStartTime + "7.5_P20test2_Gyro.txt", "gyroHeadingUsed:" + gyroHeadingUsed + ", MygyroHeading:" + MygyroHeading + ",index:" + index + ", step:" + step + "\n")
-                }
-                self.MygyroHeading =  0.0
-                
-            }
-        }
-        
-        if (self.initialHeading != 800 && self.initialHeading != -800) {//hillday & is a bug
-            if (self.StrongBeaconHeadingIndex == 1) {
-                if (abs(self.initialHeading - self.gyroHeadingUsed) < 30) {
-                    /////////need take care compassangle gyroangle range
-                    self.gyroHeadingUsed = self.initialHeading//Use beacon heading and gyro cumulative angle to decide end angle
-                    self.initialHeading = 800 //Set beacon heading to 800
-                    self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
-                    self.UseBeaconHeading = false // Set
-                } else {
-                    if (self.initialHeading > 270 && self.gyroHeadingUsed < 90) {
-                        //if (abs((360.0 - initialHeading) - gyroHeadingUsed) < 30) {
-                        if (abs((360.0 - self.initialHeading) + self.gyroHeadingUsed) < 30) {
-                            if (data_p.getTurnAnlge() < self.BiasOfHeadingBeaconHeadig) {//BiasOfHeadingBeaconHeadig = 30
-                                ///due to the case, when surveyor are in turning, beacon heading occurs
-                                self.gyroHeadingUsed = self.initialHeading//Use beacon heading and gyro cumulative angle to decide end angle
-                                self.initialHeading = 800 //Set beacon heading to 800
-                                self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
-                                self.UseBeaconHeading = false // Set
-                            } else {
-                                // if surveyor are in turning in color, but at same time, beacon heading occurs
-                            }
-                        }
-                    }
-                    if (self.initialHeading < 90 && self.gyroHeadingUsed > 270) {
-                        //if (abs((360.0 - gyroHeadingUsed) - initialHeading) < 30) {
-                        if (abs((360.0 - self.gyroHeadingUsed) + self.initialHeading) < 30) {
-                            if (data_p.getTurnAnlge() < self.BiasOfHeadingBeaconHeadig) {
-                                ///due to the case, when surveyor are in turning, beacon heading occurs
-                                self.gyroHeadingUsed = self.initialHeading//Use beacon heading and gyro cumulative angle to decide end angle
-                                self.initialHeading = 800 //Set beacon heading to 800
-                                self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
-                                self.UseBeaconHeading = false // Set
-                            } else {
-                                // if surveyor are in turning in color, but at same time, beacon heading occurs
-                            }
-                        }
-                    } else {
-                        var TempCompassAngle:Double
-                        if (data_p.getCompassFilteredAngle() < 0) {
-                            //if angle exceeds 180, convert it to -180 ~ 180
-                            TempCompassAngle = Double(data_p.getCompassFilteredAngle() + 360)
-                        } else {
-                            //if angle is in the range of (0, 180), keep it
-                            TempCompassAngle = Double(data_p.getCompassFilteredAngle())
-                        }
-                        let cbb = abs(TempCompassAngle - Double(self.initialHeading))
-                        if ( cbb < Double(abs(self.MygyroHeading - self.initialHeading)) && cbb < 40.0) {
-                            self.gyroHeadingUsed = self.initialHeading//Use beacon heading and gyro cumulative angle to decide end angle
-                            self.initialHeading = 800 //Set beacon heading to 800
-                            self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
-                            self.UseBeaconHeading = false // Set
-                        } else {
-                            
-                        }
-                    }
-                }
-                self.StrongBeaconHeadingIndex = 0
-            }
-            if (self.WeekBeaconHeadingIndex == 1) {
-                if (data_p.getTurnAnlge() < self.BiasOfHeadingBeaconHeadig) {
-                    //if the big turn occurred in the process 6s ~ 12s before now, do following operations
-                    self.gyroHeadingUsed = self.initialHeading//Use beacon heading and gyro cumulative angle to decide end angle
-                    self.initialHeading = 800 //Set beacon heading to 800
-                    self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
-                    self.UseBeaconHeading = false // Set it to false, it's a control to use beacon heading to correct initial compass heading
-                } else {
-                }
-                self.WeekBeaconHeadingIndex = 0
-            }
-            if (self.UseBeaconHeading) {
-                //if in the initial stage, compass heading has big error with beacon heading, enter into self
-                self.gyroHeadingUsed = self.initialHeading // Use beacon heading to correct compass heading
-                self.initialHeading = 800//Set beacon heading to 800
-                self.MygyroHeading = 0.0 //Set gyro cumulative angle to zero
-                self.UseBeaconHeading = false // Set it to false, it's a control to use beacon heading to correct initial compass heading
-            } else {
-                
-            }
-            //   initialHeading = 800//Set beacon heading to 800
-        }
-        
-        
-        ///todo: end fusion
-        ///todo: Convert end used angle to -180 ~ 180 from 0 ~ 360
-        if (self.gyroHeadingUsed > 360) {
-            //if exceeds 360, minus 360, keep the angle in the range of 0~360
-            self.gyroHeadingUsed = self.gyroHeadingUsed - 360
-        } else if (self.gyroHeadingUsed < 0) {
-            // if the angle is smaller than 0, add 360, keep the angle in the range of 0~360
-            self.gyroHeadingUsed = self.gyroHeadingUsed + 360
-        }
-        
-        if (self.gyroHeadingUsed > 180) {
-            //if angle exceeds 180, convert it to -180 ~ 180
-            distanceHeanding = Double(gyroHeadingUsed - 360)
-        } else {
-            //if angle is in the range of (0, 180), keep it
-            distanceHeanding = Double(gyroHeadingUsed)
-        }
-        self.stepNow = Double(data_p.getStepNumOwn()) // Get current step number
-        self.stepUsed = stepNow - stepPre   // Calculate current used step number
-        let distnace_N = calculateDistance(stepUsed, distanceHeanding, Double(stepLong))[0] //Calculate changed distance in north
-        
-        let distnace_S = calculateDistance(stepUsed, distanceHeanding, Double(stepLong))[1] //Calculate changed distance in east
-        
-        data_p.setHeading(distanceHeanding) //  Set end used heading
-        //todo: adaptive
-        if (distnace_N != 0 || distnace_S != 0) {
-            let PDRMovedDistance = sqrt(distnace_N * distnace_N + distnace_S * distnace_S)
-            self.PDRPrecisionComputed = Algorithm.CalculatePDRPrecision(self.PDRPrecisionComputed, PDRMovedDistance) //Calculate Current PDR precision
-            self.PDRTotalDistance = self.PDRTotalDistance + PDRMovedDistance
-            self.PDRTotalNE[0] = distnace_N
-            self.PDRTotalNE[1] = distnace_S
-        }
-        //todo: end
-        self.allDistance_N = self.allDistance_N + distnace_N // Cumulative distance in north
-        self.allDistence_S = self.allDistence_S + distnace_S // Cumulative distance in east
-        self.allDistance[0] = self.allDistance_N
-        self.allDistance[1] = self.allDistence_S
-        self.stepPre = self.stepNow //set now step number to pre-step
-    }
-    
-    /*
-     Based on the step num and heading to calcualte the moving distance
-     */
-    func calculateDistance(_ stepUsed:Double, _ headingUsed:Double, _ stepLong:Double)->[Double] {
-        var distanceArray:[Double] = [0.0, 0.0]
-        distanceArray[1] = (stepUsed * stepLong * sin(((headingUsed) / 180) * Double.pi))
-        distanceArray[0] = (stepUsed * stepLong * cos(((headingUsed) / 180) * Double.pi))
-        return distanceArray
-    }
     
     /*
      Calculate the step number based on the acc values
@@ -1182,414 +1028,6 @@ class KalmanPositionDetector {
         self.mMatrix = mMatrix
     }
     
-//    func DoKalmnFilter(_ CurrentTime_p:Int64) {
-//
-//        print()
-//        let S = (self.data.getStepNumOwn() - Float(self.data.getStartStep())) * self.stepLong //Calculate moved distance by used step number multiple step length
-//        if (S > 0){
-//            print("Now Step:" + String(self.data.getStepNumOwn()) + ";" + "Start Step:" + String(self.data.getStartStep()) + ";" + String(self.stepLong ))
-//            print("The moving Distance:" + String(S))
-//        }
-//
-//        KalmanAllPositionWithAngle(Double(S), self.distanceHeanding, CurrentTime_p) //Enter into KF, self KF's observations use angle
-//    }
-    
-    //    func KalmanAllPositionWithAngle(_ PDR_S: Double, _ PDR_Angle: Double, _ CurrentTime_p:Int64){
-    //        let Pi = Double.pi
-    //        let PDR_Angle_t = PDR_Angle * Pi / 180.0
-    //        var PDR_S_t = PDR_S
-    //        ///Todo:End Part 1--------------------------------------------------------------------------
-    //        ///Todo:Part 2---Set KF coefficient matrix
-    //        //Observation matrix c
-    //        let c:[[Double]] = [[1, 0, 0, 0],
-    //                            [0, 1, 0, 0]]
-    //        ///State equation coefficient matrix
-    //        let A002 = PDR_S_t * cos(PDR_Angle_t)
-    //        let A003 = -(self.Scale) * PDR_S_t * sin(PDR_Angle_t)
-    //        let A102 = PDR_S_t * sin(PDR_Angle_t)
-    //        let A103 = (self.Scale) * PDR_S_t * cos(PDR_Angle_t)
-    //        let A0:[[Double]] = [[1, 0, A002, A003],
-    //                             [0, 1, A102 ,A103],
-    //                             [0, 0, 1, 0],
-    //                             [0, 0, 0, 1]]
-    //        //State noise matrix
-    //        let q0:[[Double]] = [[0.00025, 0, 0, 0],
-    //                             [0, 0.00025, 0, 0],
-    //                             [0, 0, 0.002 * 0.002, 0],
-    //                             [0, 0, 0, 0.01]]
-    //
-    //        //Unit Matrix
-    //        let i0:[[Double]] = [[1, 0, 0, 0],
-    //                             [0, 1, 0, 0],
-    //                             [0, 0, 1, 0],
-    //                             [0, 0, 0, 1]]
-    //
-    //        let r1:[[Double]] = [[900, 0],
-    //                             [0, 900]]
-    //
-    //
-    //        ///Todo: End part 2------------------------------------------------------------------------
-    //        ///Todo: Part 3--- Construct measurement vector using GPS observation
-    //        var KFPos = self.algorithm.LatLongToDouble(KalmanFiterPos)
-    //        var PDRNE:[Double] = [KFPos[0] + (1 + self.Scale) * PDR_S_t * cos(PDR_Angle_t), KFPos[1] + (1 + self.Scale) * PDR_S_t * sin(PDR_Angle_t)]
-    //        var Z = BeaconPositioningAlgorithm.fixedArray(2, 1)
-    //        var UseGPSKF = false
-    //        var GPSNE:[Double] = [0.0, 0.0]
-    //        let N_vlist = 10
-    //        var PrecisionGPS:[Double] = [100.0, 100.0]
-    //        if (self.data.getGPSlocation()!.coordinate.latitude != -1) {
-    //            if (self.UseInternalGPS) {
-    //                if (self.data.getGPSlocation()!.coordinate.longitude != 0) {
-    //                    // Record all GPS position for test
-    //                    let RecordGPS = navigation.LatLng(self.data.getGPSlocation()!.coordinate.latitude, self.data.getGPSlocation()!.coordinate.longitude)
-    //                    //GPSDRRouteOptions.add(RecordGPS)
-    //                    self.gpsPosList.append(RecordGPS)
-    //
-    //                }
-    //            } else {
-    //                if (self.CorrectedPos.latitude != -1) {
-    //                    //GPSDRRouteOptions.add(CorrectedPos)
-    //                    self.gpsPosList.append(self.CorrectedPos)
-    //                }
-    //
-    //                if (self.data.getGPSlocation()!.coordinate.longitude != 0) {
-    //                    let RecordGPS = navigation.LatLng(self.data.getGPSlocation()!.coordinate.latitude, self.data.getGPSlocation()!.coordinate.longitude)
-    //                    //GPSDRRouteOptions.add(RecordGPS)
-    //                    self.gpsPosList.append(RecordGPS)
-    //                }
-    //            }
-    //            if (self.hdop < self.HDOPThreshold) {
-    //                if (self.data.getGPSlocation()!.horizontalAccuracy < self.InitialGPSPrecision) {
-    //                    if (self.Realtime) {
-    //                        self.DiffOfGetGPSTime = CurrentTime_p - self.GetGPSTime
-    //                        self.DiffofDGPSTime = CurrentTime_p - self.GetDGPStime
-    //                        _ = "NowTime," + String(DiffOfGetGPSTime) + "," + String(DiffofDGPSTime) ///need not to record
-    //                        // ReciveValueFromService_List.add(RecordData)
-    //                    }
-    //                    if (self.DiffOfGetGPSTime < 2000) {
-    //                        if (self.DiffofDGPSTime < 2000) {
-    //                            if (self.CorrectedPos.latitude != -1 && self.CorrectedPos.longitude != 0) {
-    //                                let dgpsPos = self.CorrectedPos
-    //                                let gpsPos = navigation.LatLng(self.data.getGPSlocation()!.coordinate.latitude, self.data.getGPSlocation()!.coordinate.longitude)
-    //                                if (dgpsPos.latitude - gpsPos.latitude > 0.1 || dgpsPos.longitude - gpsPos.longitude > 0.1) {
-    //                                    if (self.UseInternalGPS) {
-    //                                        GPSNE = self.algorithm.LatLongToDouble(gpsPos)
-    //                                    } else {
-    //                                        GPSNE[0] = 0
-    //                                        GPSNE[1] = 0
-    //                                    }
-    //                                } else {
-    //                                    GPSNE = self.algorithm.LatLongToDouble(dgpsPos)
-    //                                }
-    //                            } else {
-    //                                if (self.UseInternalGPS) {
-    //                                    let GPS = navigation.LatLng(self.data.getGPSlocation()!.coordinate.latitude, self.data.getGPSlocation()!.coordinate.longitude)
-    //                                    GPSNE = self.algorithm.LatLongToDouble(GPS)
-    //                                } else {
-    //                                    GPSNE[0] = 0
-    //                                    GPSNE[1] = 0
-    //                                }
-    //                            }
-    //                        } else {
-    //                            if (self.UseInternalGPS) {
-    //                                let GPS = navigation.LatLng(self.data.getGPSlocation()!.coordinate.latitude, self.data.getGPSlocation()!.coordinate.longitude)
-    //                                GPSNE = self.algorithm.LatLongToDouble(GPS)
-    //                            } else {
-    //                                GPSNE[0] = 0
-    //                                GPSNE[1] = 0
-    //                            }
-    //                        }
-    //
-    //                    } else {
-    //                        GPSNE[0] = 0
-    //                        GPSNE[1] = 0
-    //                    }
-    //                } else {
-    //                    GPSNE[0] = 0
-    //                    GPSNE[1] = 0
-    //                }
-    //            } else {
-    //                GPSNE[0] = 0
-    //                GPSNE[1] = 0
-    //            }
-    //        } else {
-    //            GPSNE[0] = 0
-    //            GPSNE[1] = 0
-    //        }
-    //        ////Todo: End Part 3------------------------------------------------------------------------
-    //        ///Todo: Part 7---- Predict and update using GPS observation
-    //        if (GPSNE[0] != 0) {
-    //            self.GPSPosNow = GPSNE
-    //            if (self.GPSPosNow[0] != self.GPSPosPrevious[0] || self.GPSPosNow[1] != self.GPSPosPrevious[1]) {//??Here need to be || not &&
-    //                if (self.GPSPosPrevious[0] != 0) {
-    //                    let deltaN = self.GPSPosNow[0] - self.GPSPosPrevious[0]
-    //                    let deltaE = self.GPSPosNow[1] - self.GPSPosPrevious[1]
-    //                    let gpsMovedDistance = sqrt(deltaN * deltaN + deltaE * deltaE)
-    //                    let pdrMovedDistance = self.PDRTotalDistance - self.PrePDRTotalDistance
-    //                    var pdrMoveNE:[Double] = [0.0, 0.0]
-    //                    pdrMoveNE[0] = self.PDRTotalNE[0] - self.PrePDRTotalNE[0]
-    //                    pdrMoveNE[1] = self.PDRTotalNE[1] - self.PrePDRTotalNE[1]
-    //                    _ = gpsMovedDistance - pdrMovedDistance
-    //                    var biasNE:[Double] = [0, 0]
-    //                    biasNE[0] = deltaN - pdrMoveNE[0]
-    //                    biasNE[1] = deltaE - pdrMoveNE[1]
-    //                    self.GPSTotalDistance = self.GPSTotalDistance + gpsMovedDistance
-    //                    self.GPSPosPrevious[0] = self.GPSPosNow[0]
-    //                    self.GPSPosPrevious[1] = self.GPSPosNow[1]
-    //                    self.PrePDRTotalDistance = self.PDRTotalDistance
-    //                    self.PrePDRTotalNE = self.PDRTotalNE
-    //                    self.VList.append(biasNE)
-    //                    if (self.VList.count > N_vlist) {
-    //                        self.VList.remove(at: 0)
-    //                    }
-    //                    if (self.VList.count == N_vlist) {
-    //                        PrecisionGPS[0] = 0
-    //                        PrecisionGPS[1] = 0
-    //                        var WeightSum = 0
-    //                        for i in 0..<N_vlist{
-    //                            WeightSum += i + 1
-    //                        }
-    //                        for i in 0..<N_vlist {
-    //                            let V_value = self.VList[i]
-    //                            let P_Value = (i + 1)
-    //                            let self_Value0 = V_value[0] * Double(P_Value) * V_value[0]
-    //                            let self_Value1 = V_value[1] * Double(P_Value) * V_value[1]
-    //                            PrecisionGPS[0] += self_Value0
-    //                            PrecisionGPS[1] += self_Value1
-    //                        }
-    //                        PrecisionGPS[0] = PrecisionGPS[0] / Double(WeightSum)
-    //                        PrecisionGPS[1] = PrecisionGPS[1] / Double(WeightSum)
-    //
-    //                        PrecisionGPS[0] = sqrt(PrecisionGPS[0])
-    //                        PrecisionGPS[1] = sqrt(PrecisionGPS[1])
-    //                    } else {
-    //                        PrecisionGPS[0] = 100.0
-    //                        PrecisionGPS[1] = 100.0
-    //                    }
-    //                } else {
-    //                    self.GPSPosPrevious[0] = self.GPSPosNow[0]
-    //                    self.GPSPosPrevious[1] = self.GPSPosNow[1]
-    //                    PrecisionGPS[0] = 100.0
-    //                    PrecisionGPS[1] = 100.0
-    //                }
-    //            } else {
-    //
-    //            }
-    //        }
-    //        //        double PreviousPrecisionPDR = sqrt(P_k_1.get(0,0)+P_k_1.get(1,1))
-    //        let ComPrecision0 = sqrt(PreviousPrecisionGPS[0] * PreviousPrecisionGPS[0] + P_k_1.get(paramInt1: 0, paramInt2: 0) * P_k_1.get(paramInt1: 0, paramInt2: 0))
-    //        let ComPrecision1 = sqrt(PreviousPrecisionGPS[1] * PreviousPrecisionGPS[1] + P_k_1.get(paramInt1: 1, paramInt2: 1) * P_k_1.get(paramInt1: 1, paramInt2: 1))
-    //        if (PrecisionGPS[0] > 3 * ComPrecision0 || PrecisionGPS[1] > 3 * ComPrecision1) {
-    //            GPSNE[0] = 0
-    //            GPSNE[1] = 0
-    //        }
-    //        if (PrecisionGPS[0] != 100) {
-    //            self.PreviousPrecisionGPS = PrecisionGPS
-    //        }
-    //        if (GPSNE[0] != 0 && GPSNE[1] != 0) {
-    //            UseGPSKF = true
-    //            Z[0][0] = GPSNE[0] - PDRNE[0]
-    //            Z[1][0] = GPSNE[1] - PDRNE[1]
-    //        }
-    //        ////Todo: End Part 3------------------------------------------------------------------------
-    //        ///Todo: Part 7---- Predict and update using GPS observation
-    //        do{
-    //            var R_NoiseCov = try Matrix(paramArrayOfDouble: r1)
-    //            let C = try Matrix(paramArrayOfDouble: c)
-    //            let A = try Matrix(paramArrayOfDouble: A0)
-    //            let I = try Matrix(paramArrayOfDouble: i0)
-    //            let Q = try Matrix(paramArrayOfDouble: q0)
-    //
-    //            let Y_k = try Matrix(paramArrayOfDouble: Z)
-    //            var result:(Matrix,Matrix)
-    //            var ResultXP:(Matrix,Matrix)
-    //            if (UseGPSKF) {
-    //                R_NoiseCov.set(paramInt1: 0, paramInt2: 0, paramDouble: PrecisionGPS[0] * PrecisionGPS[0])
-    //                R_NoiseCov.set(paramInt1: 1, paramInt2: 1, paramDouble: PrecisionGPS[1] * PrecisionGPS[1])
-    //                result = self.kalmanFilterFunction.Predict(X_k_1, A, P_k_1, Q)!
-    //                ResultXP = self.kalmanFilterFunction.Update(R_NoiseCov, C, I, Y_k, result)!
-    //                self.X_k = ResultXP.0
-    //                self.P_k = ResultXP.1
-    //                let dN = self.X_k.get(paramInt1: 0, paramInt2: 0)
-    //                let dE = self.X_k.get(paramInt1: 1, paramInt2: 0)
-    //                let ds = self.X_k.get(paramInt1: 2, paramInt2: 0)
-    //                let dAngle = self.X_k.get(paramInt1: 3, paramInt2: 0)
-    //                KFPos = CalculatePredictionAndEndPosNE(KFPos, dN, dE, self.Scale, ds, PDR_S_t, PDR_Angle_t, dAngle)
-    //                self.data.setKalmanFilteredPosN(KFPos[0])
-    //                self.data.setKalmanFilteredPosE(KFPos[1])
-    //                self.KalmanFiterPos = self.algorithm.DoubleToLatLong(KFPos)
-    //
-    //                self.Scale = 0
-    //                PDR_S_t = 0
-    //                PDRNE = KFPos
-    //                A.set(paramInt1: 0, paramInt2: 2, paramDouble: 0)
-    //                A.set(paramInt1: 0, paramInt2: 3, paramDouble: 0)
-    //                A.set(paramInt1: 1, paramInt2: 2, paramDouble: 0)
-    //                A.set(paramInt1: 1, paramInt2: 3, paramDouble: 0)
-    //                X_k.set(paramInt1: 0, paramInt2: 0, paramDouble: 0)
-    //                X_k.set(paramInt1: 1, paramInt2: 0, paramDouble: 0)
-    //                X_k.set(paramInt1: 2, paramInt2: 0, paramDouble: 0)
-    //                X_k.set(paramInt1: 3, paramInt2: 0, paramDouble: 0)
-    //                self.X_k_1 = self.X_k
-    //                self.P_k_1 = self.P_k
-    //            }
-    //            ///Todo: End Part 7------------------------------------------------------------------------
-    //
-    //            ////Todo: Part 4----Construct measurement vector using week beacon observation
-    //            var UseBeaconKF = false
-    //
-    //            if ((self.BeaconUsed.major != -1) && (BeaconCoordinates.positionFromBeacon(self.BeaconUsed.minor).latitude != -1)) {//yellow,beacon的线
-    //                //Week beacon occur, and its coordinates in library
-    //                let WeekBeaconPos = BeaconCoordinates.positionFromBeacon(self.BeaconUsed.minor)
-    //                let BeaconPos = self.algorithm.LatLongToDouble(WeekBeaconPos)
-    //                if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(self.BeaconUsed.minor) == 1) {
-    //                    //Week beacon
-    //                    if (self.BeaconUsed.rssi > Int(self.BeaconSignalThreshold)) {
-    //                        if (self.weakMinorRssiIndex[self.BeaconUsed.minor]!.count >= frequency) {
-    //                            //                        WriteFile.writeTxtToFiles(filePath, fileNameStartTime + "beaconTimeCheckMate20_test1.txt", "beaconMinor:" + BeaconUsed.minor + ",time:" + CurrentTime + "\n")
-    //                            //Signal is strong than threshold
-    //                            if (BeaconUsed.minor == lastUsedBeaconMinor) {
-    //                                //if self beacon is last used beacon
-    //                                if (CurrentTime_p - self.lastUsedBeaconTime > Int64(self.lastUsedBeaconTimeThreshold)) {
-    //                                    // if last used time is more than 3min
-    //                                    self.setR = AdaptiveQR(self.BeaconUsed, self.P_k, &R_NoiseCov, self.KalmanFiterPos) //Adaptive observation noise matrix method
-    //                                    Algorithm.MoveToWeekBeaconPosition(self.BeaconUsed, self.allDistance, &self.allDistancePast, &self.positionNow, &self.positionPast) // Correct position by Beacon
-    //                                    Z[0][0] = BeaconPos[0] - PDRNE[0] //Observation got from beacon in deltaN
-    //                                    Z[1][0] = BeaconPos[1] - PDRNE[1] //Observation got from beacon in deltaE
-    //                                    Y_k.set(paramInt1: 0, paramInt2: 0, paramDouble: Z[0][0])
-    //                                    Y_k.set(paramInt1: 1, paramInt2: 0, paramDouble: Z[1][0])
-    //                                    self.lastUsedBeaconTime = CurrentTime_p// Update self beacon used time
-    //                                    //BeaconPosOptions.add(WeekBeaconPos) //Record for plot
-    //                                    // BeaconMarkerOptions.position(WeekBeaconPos)//将原来的画黄色直线改为画marker
-    //                                    if (self.allBeaconMarker.count == 0) {
-    //                                        //MarkerOptions BeaconMarkerOptions = new MarkerOptions()
-    //                                        self.allBeaconMarker.append(WeekBeaconPos)
-    //                                    } else {
-    //                                        var count = 0
-    //                                        for i in 0..<self.allBeaconMarker.count {
-    //                                            if (self.allBeaconMarker[i].equals(WeekBeaconPos)) {
-    //                                                break//如果链表里已经存有这个beacon的位置，就不再往里存放
-    //                                            } else {
-    //                                                count += 1
-    //                                                if (count == self.allBeaconMarker.count) {
-    //                                                    //MarkerOptions BeaconMarkerOptions = new MarkerOptions()
-    //                                                    self.allBeaconMarker.append(WeekBeaconPos)
-    //                                                }
-    //                                            }
-    //                                        }
-    //                                    }
-    //                                    //     WriteFile.writeTxtToFiles(filePath, fileNameStartTime + "7.5_Mate20_test3_yellowBeaconPos.txt", "BeaconPos:" + BeaconUsed.minor + ", size:" + allBeaconMarker.size() + "\n")
-    //                                    self.BeaconSurveyorDistance = pow(10, (-Double(self.BeaconUsed.rssi) - 87.48) / (14.04))
-    //                                    UseBeaconKF = true
-    //                                }
-    //                                self.NotUseGPSTime = CurrentTime_p // do not let program use GPS value
-    //                            } else {
-    //                                ///if new beacon occurs
-    //                                self.setR = AdaptiveQR(self.BeaconUsed, self.P_k, &R_NoiseCov, self.KalmanFiterPos)
-    //                                Algorithm.MoveToWeekBeaconPosition(self.BeaconUsed, self.allDistance, &self.allDistancePast, &self.positionNow, &self.positionPast)
-    //                                Z[0][0] = BeaconPos[0] - PDRNE[0]
-    //                                Z[1][0] = BeaconPos[1] - PDRNE[1]
-    //                                Y_k.set(paramInt1: 0, paramInt2: 0, paramDouble: Z[0][0])
-    //                                Y_k.set(paramInt1: 1, paramInt2: 0, paramDouble: Z[1][0])
-    //                                self.lastUsedBeaconMinor = self.BeaconUsed.minor
-    //                                self.lastUsedBeaconTime = self.CurrentTime
-    //                                self.BeaconSurveyorDistance = pow(10, (-Double(self.BeaconUsed.rssi) - 87.48) / (14.04))
-    //                                //BeaconPosOptions.add(WeekBeaconPos)
-    //                                // BeaconMarkerOptions.position(WeekBeaconPos)//将原来的画黄色直线改为画marker
-    //                                if (self.allBeaconMarker.count == 0) {
-    //                                    //MarkerOptions BeaconMarkerOptions = new MarkerOptions()
-    //                                    self.allBeaconMarker.append(WeekBeaconPos)
-    //                                } else {
-    //                                    var count = 0
-    //                                    for i in 0..<self.allBeaconMarker.count {
-    //                                        if (self.allBeaconMarker[i].equals(WeekBeaconPos)) {
-    //                                            break//如果链表里已经存有这个beacon的位置，就不再往里存放
-    //                                        } else {
-    //                                            count += 1
-    //                                            if (count == self.allBeaconMarker.count) {
-    //                                                //MarkerOptions BeaconMarkerOptions = new MarkerOptions()
-    //                                                self.allBeaconMarker.append(WeekBeaconPos)
-    //                                            }
-    //                                        }
-    //                                    }
-    //                                }
-    //                                UseBeaconKF = true
-    //                                self.NotUseGPSTime = CurrentTime_p
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //            ///Todo: End Part 4------------------------------------------------------------------------
-    //            ///Todo: Part 6----Predict and update using Beacon observation
-    //            if (UseBeaconKF) {
-    //                result = self.kalmanFilterFunction.Predict(X_k_1, A, P_k_1, Q)!
-    //
-    //                let BeaconN_Precision = 0.0
-    //                let BeaconE_Precision = 0.0
-    //                R_NoiseCov.set(paramInt1: 0, paramInt2: 0, paramDouble: BeaconN_Precision * BeaconN_Precision)
-    //                R_NoiseCov.set(paramInt1: 1, paramInt2: 1, paramDouble: BeaconE_Precision * BeaconE_Precision)
-    //                ResultXP = self.kalmanFilterFunction.Update(R_NoiseCov, C, I, Y_k, result)!
-    //                self.X_k = ResultXP.0
-    //                self.P_k = ResultXP.1
-    //                let dN = X_k.get(paramInt1: 0, paramInt2: 0)
-    //                let dE = X_k.get(paramInt1: 1, paramInt2: 0)
-    //                let ds = X_k.get(paramInt1: 2, paramInt2: 0)
-    //                let dAngle = X_k.get(paramInt1: 3, paramInt2: 0)
-    //                KFPos = CalculatePredictionAndEndPosNE(KFPos, dN, dE, self.Scale, ds, PDR_S_t, PDR_Angle_t, dAngle)
-    //                self.data.setKalmanFilteredPosN(KFPos[0])
-    //                self.data.setKalmanFilteredPosE(KFPos[1])
-    //                self.KalmanFiterPos = self.algorithm.DoubleToLatLong(KFPos)
-    //
-    //                self.Scale = 0
-    //                self.X_k.set(paramInt1: 0, paramInt2: 0, paramDouble: 0)
-    //                self.X_k.set(paramInt1: 1, paramInt2: 0, paramDouble: 0)
-    //                self.X_k.set(paramInt1: 2, paramInt2: 0, paramDouble: 0)
-    //                self.X_k.set(paramInt1: 3, paramInt2: 0, paramDouble: 0)
-    //                self.X_k_1 = self.X_k
-    //                self.P_k_1 = self.P_k
-    //                self.BeaconUsed = iBeacon()
-    //                self.BeaconSurveyorDistance = 0
-    //                PDRNE = KFPos
-    //            }
-    //            ///Todo: End Part 6------------------------------------------------------------------------
-    //
-    //            ///Todo: Part 8---- Predict and update without beacon and GPS using prediction observation
-    //            if (!UseBeaconKF && !UseGPSKF) {//hillday is a bug & ??
-    //                var PredictionResult:(Matrix,Matrix)
-    //                let stepBias = (Double(self.data.getStepNumOwn()) - self.data.getStartStep())
-    //                if (stepBias == 0) {
-    //                    PredictionResult = (self.X_k_1, self.P_k_1)
-    //                } else {
-    //                    PredictionResult = self.kalmanFilterFunction.Predict(X_k_1, A, P_k_1, Q)!
-    //                }
-    //                let State_Prediction = PredictionResult.0
-    //                let State_Cov = PredictionResult.1
-    //                let dN = State_Prediction.get(paramInt1: 0, paramInt2: 0)
-    //                let dE = State_Prediction.get(paramInt1: 1, paramInt2: 0)
-    //                let ds = State_Prediction.get(paramInt1: 2, paramInt2: 0)
-    //                let dAngle = State_Prediction.get(paramInt1: 3, paramInt2: 0)
-    //                KFPos = CalculatePredictionAndEndPosNE(KFPos, dN, dE, self.Scale, ds, PDR_S_t, PDR_Angle_t, dAngle)
-    //                self.data.setKalmanFilteredPosN(KFPos[0])
-    //                self.data.setKalmanFilteredPosE(KFPos[1])
-    //                let NE:[Double] = [KFPos[0], KFPos[1]]
-    //                self.KalmanFiterPos = self.algorithm.DoubleToLatLong(NE)
-    //
-    //                self.Scale = 0
-    //                State_Prediction.set(paramInt1: 0, paramInt2: 0, paramDouble: 0)
-    //                State_Prediction.set(paramInt1: 1, paramInt2: 0, paramDouble: 0)
-    //                State_Prediction.set(paramInt1: 2, paramInt2: 0, paramDouble: 0)
-    //                State_Prediction.set(paramInt1: 3, paramInt2: 0, paramDouble: 0)
-    //                self.X_k_1 = State_Prediction
-    //                self.P_k_1 = State_Cov
-    //            }
-    //
-    //            ///Todo: End Part 8------------------------------------------------------------------------
-    //            self.ProgramStartTime = CurrentTime_p
-    //        }catch{
-    //
-    //        }
-    //    }
 }
 
 
