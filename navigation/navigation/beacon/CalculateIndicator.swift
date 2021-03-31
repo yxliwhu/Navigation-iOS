@@ -7,7 +7,9 @@
 
 import Foundation
 
-class  CalculateIndicator {
+var rssiThreshold: Double = -80.0
+
+class CalculateIndicator {
     
     static func WeekIndicator(_ PreIndicator: Int64,_ rssiList: [Double], _ WeekBeaconRSSINumberForIndex: Int)->Int64{
         var tempRSSI_Now = [Int:Double]()
@@ -61,7 +63,7 @@ class  CalculateIndicator {
     static func judgeIsNaN(_ rssimap:[Int:Double])->Bool{
         var index=true
         for (_,v) in rssimap{
-            if(v != 0.0 && v > -87 ){
+            if(v != 0.0 && v > rssiThreshold){
                 index=false
                 break
             }

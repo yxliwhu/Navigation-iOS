@@ -41,7 +41,7 @@ class KalmanPositionDetector {
     var currentIndex:Int = 0
     var BeaconUsedRecord:Bool = false
     var BeaconUsed:iBeacon
-    var BeaconSignalThreshold:Float = -88.0
+    var BeaconSignalThreshold:Float = -80.0
     var weakMinorRssiIndex = [Int64:[[[Int]]]]()
     var timeWindow:Int = 2
     var frequency:Int = 3
@@ -239,7 +239,7 @@ class KalmanPositionDetector {
             }
             //todo: when received weakbeacon is more than 3 times in 1 second, then remove previous weakbeacon in case PDR go back to prevoious beacon
             let listNow = self.weakMinorRssiIndex[self.BeaconUsed.minor]
-            if (!listNow!.isEmpty && listNow!.count >= self.frequency) {
+            if (listNow != nil && !listNow!.isEmpty && listNow!.count >= self.frequency) {
                 let indexNow = listNow![0][0][1]
                 var rmKeys_0 = [Int64]()
                 for (k,v) in self.weakMinorRssiIndex {
@@ -304,7 +304,7 @@ class KalmanPositionDetector {
                 //stepLong = StepLenghtAdjustmentByChenMethod(height, DeltaStep)
                 self.AdjuststepLong = Algorithm.StepLenghtAdjustmentByChenMethod(height!, DeltaStep) // Ajust step length by model
                 self.stepLong = self.AdjuststepLong//set adjusted step length to step length
-                print("The value of Step length:  " + String(self.stepLong))
+//                print("The value of Step length:  " + String(self.stepLong))
                 // WriteFile.writeTxtToFiles(filePath, fileNameStartTime + "AdjustStepLenghtChen.txt", String.valueOf(AdjuststepLong) + "," + data.getStepNumOwn() + "," + distance + "\n")
                 self.RecordNowTime = true
             }
@@ -353,11 +353,11 @@ class KalmanPositionDetector {
     }
     
     func getInitialPosition(_ data_p:Data, _ BeaconUsed_p:iBeacon, _ DistanceNow:[Double]) -> Bool{
-        if (self.weakBeaconForPositioning(BeaconUsed_p,DistanceNow)){
+        if (!self.weakBeaconForPositioning(BeaconUsed_p,DistanceNow)){
             return self.weakBeaconForPositioning(BeaconUsed_p,DistanceNow)
-        }else if (self.strongBeaconforPositioning(BeaconUsed_p)) {
+        }else if (!self.strongBeaconforPositioning(BeaconUsed_p)) {
             return self.strongBeaconforPositioning(BeaconUsed_p)
-        }else if (self.GPSforPositioning(data_p, DistanceNow)){
+        }else if (!self.GPSforPositioning(data_p, DistanceNow)){
             return self.GPSforPositioning(data_p, DistanceNow)
         } else{
             return true

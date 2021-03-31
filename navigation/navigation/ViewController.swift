@@ -44,6 +44,8 @@ class ViewController: UIViewController , MKMapViewDelegate{
     
     var locationArrayGPS: [CLLocationCoordinate2D] = []
     var locationArrayFilter: [CLLocationCoordinate2D] = []
+    var scanService: BeaconScanService? = nil
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -78,6 +80,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
         labelUI(label: &self.CounterSys, text: "Step:", x: 120, y: 16)
         labelUI(label: &self.GNSS_Precision, text: "GPS:", x: 120, y: 46)
         labelUI(label: &self.PosLat, text: "Heading:", x: 120, y: 76)
+        self.PosLat.adjustsFontSizeToFitWidth=true
         
         var setBtn = UIButton(type: .system) as UIButton
         let sx:Int = Int(self.view.bounds.width - 80)
@@ -116,20 +119,23 @@ class ViewController: UIViewController , MKMapViewDelegate{
     }
     
     @objc func removeMaker(_ btn: UIButton){
+        removeRouteformMap()
+    }
+    
+    func removeRouteformMap(){
         var shouldRomove: [MKOverlay] = [ ]
-        if self.mMap!.overlays.isEmpty{
+        if !self.mMap!.overlays.isEmpty{
             for index in 0 ..< self.mMap!.overlays.count {
-                if (self.mMap!.overlays[index].title != nil && self.mMap!.overlays[index].title! == "Route"){
+                if (self.mMap!.overlays[index].title != nil && self.mMap!.overlays[index].title == "Route"){
                 shouldRomove.append(self.mMap!.overlays[index])
                 }
             }
             self.mMap!.removeOverlays(shouldRomove)
         }
-        
     }
     
     @objc func routerTo(_ btn: UIButton){
-
+        removeRouteformMap()
         let Route1 = MKPolyline(coordinates: locationArrayGPS, count: locationArrayGPS.count)
         Route1.title = "Route"
         Route1.subtitle = "GPS"
@@ -137,7 +143,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
         let Route2 = MKPolyline(coordinates: locationArrayFilter, count: locationArrayFilter.count)
         Route2.title = "Route"
         Route2.subtitle = "Filter"
-        let region = MKCoordinateRegion(center: locationArrayFilter[0], span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+        let region = MKCoordinateRegion(center: locationArrayFilter[0], span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001))
         mMap?.setRegion(region, animated: true)
         mMap?.addOverlay(Route1)
         mMap?.addOverlay(Route2)
@@ -254,7 +260,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
             if (positionNow != nil && positionNow?.coordinate.latitude != -1.0) {
                 updatePosMK(pos: positionNow!,title: "NowPos")
                 locationArrayFilter.append(positionNow!.coordinate)
-                print("The value of position now:  " + String(positionNow!.coordinate.latitude) + "," + String(positionNow!.coordinate.longitude))
+//                print("The value of position now:  " + String(positionNow!.coordinate.latitude) + "," + String(positionNow!.coordinate.longitude))
             }
             if (GPSLocation != nil && GPSLocation?.coordinate.latitude != -1.0) {
                 locationArrayGPS.append(GPSLocation!.coordinate)
@@ -265,8 +271,8 @@ class ViewController: UIViewController , MKMapViewDelegate{
         if (MoveMapCenter) {
             if (positionNow != nil && positionNow?.coordinate.latitude != -1.0) {
                 //创建一个MKCoordinateSpan对象，设置地图的范围（越小越精确）
-                let latDelta = 0.05
-                let longDelta = 0.05
+                let latDelta = 0.001
+                let longDelta = 0.001
                 let currentLocationSpan: MKCoordinateSpan  =  MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: longDelta)
                 
                 //定义地图区域和中心坐标（
@@ -409,9 +415,6 @@ class ViewController: UIViewController , MKMapViewDelegate{
             self.timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(ViewController.insertBeaconData), userInfo: nil, repeats: true)
         }
         beaconHelper.setBackBeaconBlock { (pData) in
-            guard self.inScanning else {
-                return
-            }
             if (self.startTime == 0) {
                 self.startTime = iBeaconClass.getNowMillis()
             }
@@ -432,7 +435,15 @@ class ViewController: UIViewController , MKMapViewDelegate{
             }
             
             for tIBeacon in pData {
-                let m_beacon = self.toCustomIbeacon(tIBeacon)
+                var m_beacon = self.toCustomIbeacon(tIBeacon)
+                if (m_beacon.rssi == 0){
+                    m_beacon.rssi = -99
+                }
+                if (self.indexCurrent < 1){
+                    self.scanService = BeaconScanService(m_beacon,self.startTime,self.indexCurrent)
+                }else{
+                    
+                }
                 if (self.recordData){
                     self.recordScanningData(m_beacon)
                 }
@@ -466,7 +477,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
             let line = "postEveryBeacon," + "0" + "," + "0" + "," + String(self.startTime) + "," + String(nTime) + "," + String(self.indexPre) + "," + "0"
             wsContent.append(line)
             
-            FileUtils.writeStrings(self.beaconFile, wsContent)
+//            FileUtils.writeStrings(self.beaconFile, wsContent)
         }
     }
     
@@ -487,10 +498,10 @@ class ViewController: UIViewController , MKMapViewDelegate{
      Function to scan and process the BLE
      */
     func ibeaconScanDataProcess(_ indexDelta:Int64, _ m_beacon: iBeacon){
-        let scanService = BeaconScanService(m_beacon,self.startTime,self.indexCurrent)
-        scanService.StoreSignalPeakDetection(m_beacon, self.currentTime)
-        scanService.SignalPeak(self.currentTime)
-        let KeyDistance:[Int64:[Double]] = BeaconPositioningAlgorithm.CalculateDistanceMapByStrongBeacon(m_beacon, scanService.StoreScannedBeacon)
+//        let scanService = BeaconScanService(m_beacon,self.startTime,self.indexCurrent)
+        self.scanService!.StoreSignalPeakDetection(m_beacon, self.currentTime)
+        self.scanService!.SignalPeak(self.currentTime)
+        let KeyDistance:[Int64:[Double]] = BeaconPositioningAlgorithm.CalculateDistanceMapByStrongBeacon(m_beacon, self.scanService!.StoreScannedBeacon)
         if (KeyDistance.count > 3){
             let StrongBeaconPosXYTemp = BeaconPositioningAlgorithm.CalculatePositionByDistance(KeyDistance)
             let StrongBeaconPosXY:[Double] =  [StrongBeaconPosXYTemp[0], StrongBeaconPosXYTemp[1], StrongBeaconPosXYTemp[2], StrongBeaconPosXYTemp[3]]
@@ -499,25 +510,25 @@ class ViewController: UIViewController , MKMapViewDelegate{
         
         let beaconScanStartTime:Int64 = Int64(Int(self.startTime) + 1000 * self.indexCurrent + 500)
         if (indexDelta < 1) {
-            scanService.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
+            self.scanService!.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
         }
         
         if (indexDelta >= 1 && indexDelta < 2) {
             
-            scanService.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
+            self.scanService!.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
             
-            scanService.updateAverageValues(beaconScanStartTime)
-            scanService.BuildStrongBeaconMap()
-            scanService.GetNonZeroMap(scanService.StrongBeacon)
-            scanService.CalculateSlope(scanService.NonZeroStrongMap, scanService.StrongBeacon)
-            scanService.StrongBeaconKeyIndicator = CalculateIndicator.StrongIndicator(scanService.minorSlope, &scanService.StrongBeaconKeyIndicator, scanService.StrongBeaconSlopeIndexPlus, scanService.StrongBeaconSlopeIndexMius)
+            self.scanService!.updateAverageValues(beaconScanStartTime)
+            self.scanService!.BuildStrongBeaconMap()
+            self.scanService!.GetNonZeroMap(self.scanService!.StrongBeacon)
+            self.scanService!.CalculateSlope(self.scanService!.NonZeroStrongMap, self.scanService!.StrongBeacon)
+            self.scanService!.StrongBeaconKeyIndicator = CalculateIndicator.StrongIndicator(self.scanService!.minorSlope, &self.scanService!.StrongBeaconKeyIndicator, self.scanService!.StrongBeaconSlopeIndexPlus, self.scanService!.StrongBeaconSlopeIndexMius)
             
-            scanService.CalculateWeekBeaconIndicator()
-            scanService.MergeHeadingANDClearData()
-            scanService.SendHeadingToActivity()
+            self.scanService!.CalculateWeekBeaconIndicator()
+            self.scanService!.MergeHeadingANDClearData()
+            self.scanService!.SendHeadingToActivity()
             
-            if(!scanService.HeadingIndex.isEmpty && scanService.HeadingIndex[0] != 800){
-                stepDetecor!.getDetector().setBeaconHeadVals(Float(scanService.HeadingIndex[0]), scanService.HeadingIndex[1], scanService.HeadingIndex[2])
+            if(!self.scanService!.HeadingIndex.isEmpty && self.scanService!.HeadingIndex[0] != 800){
+                stepDetecor!.getDetector().setBeaconHeadVals(Float(self.scanService!.HeadingIndex[0]), self.scanService!.HeadingIndex[1], self.scanService!.HeadingIndex[2])
             }
         }
     }

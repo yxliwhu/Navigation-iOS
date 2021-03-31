@@ -83,7 +83,7 @@ extension IBeaconHelper:CLLocationManagerDelegate {
         guard beacons.count > 0 else { return }
         if let blockBeaconData = backBeaconDataBlock {
             blockBeaconData(beacons)
-            print("The number of beacons is: " + String(beacons.count))
+//            print("The number of beacons is: " + String(beacons.count))
         }
     }
     

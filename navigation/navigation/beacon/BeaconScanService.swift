@@ -44,22 +44,23 @@ class BeaconScanService {
     var StrongIndex:Bool = false
     var JudgeNowUsedAngleToWrong:Bool = false
     //////////Thresthold Settings
-    var WeekBeaconRSSIRemoveStrongBeacon:Double = -87.0 // Week beacon filter threshold
+    var WeekBeaconRSSIRemoveStrongBeacon:Double = -80.0 // Week beacon filter threshold
     var BeaconSignalDetectWindow:Int64 = 3000 // Week beacon signal detection time window
-    var MinWeekBeaconRSSINumber:Int = 1 //Min detected week beacon number （for iOS, there only 1 sample for 1 second）
-    var StrongBeaconStrongestRSSINumberThreshold:Int = 20
-    var BeaconNumber:Int = 15
-    var StrongBeaconNumber:Int = 15
-    var WeekBeaconNumber:Int = 15// Week beacon number threshold for building indicator map
-    var NonZeroStrongRSSINumber:Int = 8
+    var MinWeekBeaconRSSINumber:Int = 2 //Min detected week beacon number （for iOS, there only 1 sample for 1 second）
+//    var StrongBeaconStrongestRSSINumberThreshold:Int = 20
+    var BeaconNumber:Int = 10
+    var StrongBeaconNumber:Int = 10
+    var WeekBeaconNumber:Int = 10// Week beacon number threshold for building indicator map
+    var NonZeroStrongRSSINumber:Int = 6
     var StrongBeaconSlopeIndexPlus:Double = 0.4  // strong beacon slope threshold max value
     var StrongBeaconSlopeIndexMius:Double = -0.4 // strong beacon slope threshold min value
-    var WeekBeaconRSSINumberForIndex:Int = 15    // Week beacon rssi series size threshold for index calculation
+    var WeekBeaconRSSINumberForIndex:Int = 10    // Week beacon rssi series size threshold for index calculation
     var TurnAngleThreshold:Double = 60           // Surveyor turn angle threshold
     var StartTime:Int64 = 0
     var fileName:String = ""
     var indexNow:Int = 0
     var HeadingIndex:[Double] = []
+    var headingFile:URL!
     
     init(_ cb: iBeacon, _ start:Int64, _ current: Int){
         self.beaconAverageValues = [:]
@@ -77,6 +78,7 @@ class BeaconScanService {
         self.curBeacon = cb
         self.StartTime = start
         self.indexNow = current
+        self.headingFile = FileUtils.urlFile("headingFile")!
     }
     
     func ClearWeekBeacon() {
@@ -312,7 +314,7 @@ class BeaconScanService {
                     var CloneTimeRSSI:[TimeAverageRSSI] = []
                     var PreIndicator:Int64 = 0
                     var NowIndicator:Int64 = 0
-                    if (PreIndicatorHashmap.count > 0) {
+                    if (PreIndicatorHashmap.count > 0 && PreIndicatorHashmap[k] != nil) {
                         PreIndicator = PreIndicatorHashmap[k]!
                     } else {
                         PreIndicator = 0
@@ -402,16 +404,27 @@ class BeaconScanService {
         }
     }
     
+    // Test codes start *******************************************************************
+    
+    func recordScanningData(_ heading: Double, _ index: String){
+        var wsContent = [String]()
+        wsContent.append(String(heading))
+        wsContent.append(index)
+        FileUtils.writeStrings(self.headingFile, wsContent)
+    }
+    // Test codes end *********************************************************************
     func MergeHeadingANDClearData() {
         if (IndicatorMap.count >= 2) {//至少存储了两个weak beacon的信息
             let calculateWeekBeaconHeading = CalculateWeekBeaconHeading()
             WeekHeading = calculateWeekBeaconHeading.CalculateHeadingByIndicator(StartTime, fileName, IndicatorMap)
+            recordScanningData(WeekHeading, ";  from Weak Beacon")
         }
         if (StrongBeaconKeyIndicator.count >= 2) {
             let calculateStrongBeaconHeading = CalculateStrongBeaconHeading()
             StrongHeading = calculateStrongBeaconHeading.MergeIndicatorToHeading(StartTime, fileName, StrongBeaconKeyIndicator)
+            recordScanningData(StrongHeading, ";  from Strong Beacon")
         }
-        let WeekHeadingRecord = WeekHeading
+//        let WeekHeadingRecord = WeekHeading
         if (WeekHeading != 800) {
             heading = WeekHeading
             /*String outPutString = heading + "strongHeading," + StrongHeading + ",WeekHeading," + WeekHeadingRecord + ",Time," + indexNow + "\n"

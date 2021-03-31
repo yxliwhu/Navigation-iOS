@@ -128,8 +128,8 @@ class Data {
     func setNmea(_ nema: String){
         self.nmea = nema
     }
-    func  setBeaconLat(_ beaconLat: Double){self.BeaconLat=beaconLat}
-    func  getBeaconLat()->Double{return self.BeaconLat}
+    func setBeaconLat(_ beaconLat: Double){self.BeaconLat=beaconLat}
+    func getBeaconLat()->Double{return self.BeaconLat}
     func setBeaconLon(_ beaconLon:Double){self.BeaconLon=beaconLon}
     func getBeaconLon()->Double{return self.BeaconLon}
     func getDegree()->Float {
