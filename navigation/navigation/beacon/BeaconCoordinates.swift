@@ -19,372 +19,136 @@ class BeaconCoordinates {
         if(minor==2230010002){result =  LatLng(22.3063801,114.1795741)}
         if(minor==2230020002){result =  LatLng(22.3063801,114.1795741)}
         //最后一位代表当前灯柱
-//        if(minor==1230010001){result =  LatLng(22.3602104,114.1136387)}
-//        if(minor==3203123612){result =  LatLng(22.3602104,114.1136387)}
-//        if(minor==2230010001){result =  LatLng(22.3602104,114.1136387)}
-//        if(minor==2230020001){result =  LatLng(22.3602104,114.1136387)}
-//        if(minor==3230020001){result =  LatLng(22.3602104,114.1136387)}
-//        if(minor==4230020001){result =  LatLng(22.3602104,114.1136387)}
-//        if(minor==1230010002){result =  LatLng(22.3605242,114.1141963)}
-//        if(minor==1230020002){result =  LatLng(22.3605242,114.1141963)}
-//        if(minor==2230010002){result =  LatLng(22.3605242,114.1141963)}
-//        if(minor==2230020002){result =  LatLng(22.3605242,114.1141963)}
-//        if(minor==3230020002){result =  LatLng(22.3605242,114.1141963)}
-//        if(minor==4230020002){result =  LatLng(22.3605242,114.1141963)}
-        //Shing Kai Road
-//        if(minor==1404510001){result =  LatLng(22.333017,114.20452)}
-//        if(minor==1404520001){result =  LatLng(22.333017,114.20452)}//not used
-//        if(minor==2404510001){result =  LatLng(22.333017,114.20452)}
-//        if(minor==2404520001){result =  LatLng(22.333017,114.20452)}//not used
-//        if(minor==3404510001){result =  LatLng(22.333017,114.20452)}//not uead
-//        if(minor==3404520001){result =  LatLng(22.333017,114.20452)}
-//        if(minor==4404510001){result =  LatLng(22.333017,114.20452)}//not used
-//        if(minor==4404520001){result =  LatLng(22.333017,114.20452)}
-//        if(minor==1404510002){result =  LatLng(22.332852,114.204529)}
-//        if(minor==1404520002){result =  LatLng(22.332852,114.204529)}
-//        if(minor==2404510002){result =  LatLng(22.332852,114.204529)}
-//        if(minor==2404520002){result =  LatLng(22.332852,114.204529)}
-//        if(minor==3404510002){result =  LatLng(22.332852,114.204529)}
-//        if(minor==3404520002){result =  LatLng(22.332852,114.204529)}
-//        if(minor==4404510002){result =  LatLng(22.332852,114.204529)}
-//        if(minor==4404520002){result =  LatLng(22.332852,114.204529)}
-//        if(minor==1404510003){result =  LatLng(22.332617,114.204558)}
-//        if(minor==1404520003){result =  LatLng(22.332617,114.204558)}
-//        if(minor==2404510003){result =  LatLng(22.332617,114.204558)}
-//        if(minor==2404520003){result =  LatLng(22.332617,114.204558)}
-//        if(minor==3404510003){result =  LatLng(22.332617,114.204558)}
-//        if(minor==3404520003){result =  LatLng(22.332617,114.204558)}
-//        if(minor==4404510003){result =  LatLng(22.332617,114.204558)}
-//        if(minor==4404520003){result =  LatLng(22.332617,114.204558)}
-//        if(minor==1404510004){result =  LatLng(22.332411,114.204568)}
-//        if(minor==1404520004){result =  LatLng(22.332411,114.204568)}
-//        if(minor==2404510004){result =  LatLng(22.332411,114.204568)}
-//        if(minor==2404520004){result =  LatLng(22.332411,114.204568)}
-//        if(minor==3404510004){result =  LatLng(22.332411,114.204568)}
-//        if(minor==3404520004){result =  LatLng(22.332411,114.204568)}
-//        if(minor==4404510004){result =  LatLng(22.332411,114.204568)}
-//        if(minor==4404520004){result =  LatLng(22.332411,114.204568)}
-//        if(minor==1404510005){result =  LatLng(22.332193,114.204582)}
-//        if(minor==1404520005){result =  LatLng(22.332193,114.204582)}
-//        if(minor==2404510005){result =  LatLng(22.332193,114.204582)}
-//        if(minor==2404520005){result =  LatLng(22.332193,114.204582)}
-//        if(minor==3404510005){result =  LatLng(22.332193,114.204582)}
-//        if(minor==3404520005){result =  LatLng(22.332193,114.204582)}
-//        if(minor==4404510005){result =  LatLng(22.332193,114.204582)}
-//        if(minor==4404520005){result =  LatLng(22.332193,114.204582)}
-//        if(minor==1404510006){result =  LatLng(22.331972,114.204609)}
-//        if(minor==1404520006){result =  LatLng(22.331972,114.204609)}
-//        if(minor==2404510006){result =  LatLng(22.331972,114.204609)}
-//        if(minor==2404520006){result =  LatLng(22.331972,114.204609)}
-//        if(minor==3404510006){result =  LatLng(22.331972,114.204609)}
-//        if(minor==3404520006){result =  LatLng(22.331972,114.204609)}
-//        if(minor==4404510006){result =  LatLng(22.331972,114.204609)}
-//        if(minor==4404520006){result =  LatLng(22.331972,114.204609)}
-//        if(minor==1404510007){result =  LatLng(22.331762,114.204635)}
-//        if(minor==1404520007){result =  LatLng(22.331762,114.204635)}
-//        if(minor==2404510007){result =  LatLng(22.331762,114.204635)}
-//        if(minor==2404520007){result =  LatLng(22.331762,114.204635)}
-//        if(minor==3404510007){result =  LatLng(22.331762,114.204635)}
-//        if(minor==3404520007){result =  LatLng(22.331762,114.204635)}
-//        if(minor==4404510007){result =  LatLng(22.331762,114.204635)}
-//        if(minor==4404520007){result =  LatLng(22.331762,114.204635)}
-//        if(minor==1404510008){result =  LatLng(22.331536,114.204653)}
-//        if(minor==1404520008){result =  LatLng(22.331536,114.204653)}
-//        if(minor==2404510008){result =  LatLng(22.331536,114.204653)}
-//        if(minor==2404520008){result =  LatLng(22.331536,114.204653)}
-//        if(minor==3404510008){result =  LatLng(22.331536,114.204653)}
-//        if(minor==3404520008){result =  LatLng(22.331536,114.204653)}
-//        if(minor==4404510008){result =  LatLng(22.331536,114.204653)}
-//        if(minor==4404520008){result =  LatLng(22.331536,114.204653)}
-//        if(minor==1404510009){result =  LatLng(22.331311,114.204641)}
-//        if(minor==1404520009){result =  LatLng(22.331311,114.204641)}
-//        if(minor==2404510009){result =  LatLng(22.331311,114.204641)}
-//        if(minor==2404520009){result =  LatLng(22.331311,114.204641)}
-//        if(minor==3404510009){result =  LatLng(22.331311,114.204641)}
-//        if(minor==3404520009){result =  LatLng(22.331311,114.204641)}
-//        if(minor==4404510009){result =  LatLng(22.331311,114.204641)}
-//        if(minor==4404520009){result =  LatLng(22.331311,114.204641)}
-//        if(minor==1404510010){result =  LatLng(22.331034,114.204639)}
-//        if(minor==1404520010){result =  LatLng(22.331034,114.204639)}
-//        if(minor==2404510010){result =  LatLng(22.331034,114.204639)}
-//        if(minor==2404520010){result =  LatLng(22.331034,114.204639)}
-//        if(minor==3404510010){result =  LatLng(22.331034,114.204639)}
-//        if(minor==3404520010){result =  LatLng(22.331034,114.204639)}
-//        if(minor==4404510010){result =  LatLng(22.331034,114.204639)}
-//        if(minor==4404520010){result =  LatLng(22.331034,114.204639)}
-//        if(minor==1404510011){result =  LatLng(22.330803,114.204641)}
-//        if(minor==1404520011){result =  LatLng(22.330803,114.204641)}
-//        if(minor==2404510011){result =  LatLng(22.330803,114.204641)}
-//        if(minor==2404520011){result =  LatLng(22.330803,114.204641)}
-//        if(minor==3404510011){result =  LatLng(22.330803,114.204641)}
-//        if(minor==3404520011){result =  LatLng(22.330803,114.204641)}
-//        if(minor==4404510011){result =  LatLng(22.330803,114.204641)}
-//        if(minor==4404520011){result =  LatLng(22.330803,114.204641)}
-//        if(minor==1404510012){result =  LatLng(22.330588,114.204642)}
-//        if(minor==1404520012){result =  LatLng(22.330588,114.204642)}
-//        if(minor==2404510012){result =  LatLng(22.330588,114.204642)}
-//        if(minor==2404520012){result =  LatLng(22.330588,114.204642)}
-//        if(minor==3404510012){result =  LatLng(22.330588,114.204642)}
-//        if(minor==3404520012){result =  LatLng(22.330588,114.204642)}
-//        if(minor==4404510012){result =  LatLng(22.330588,114.204642)}
-//        if(minor==4404520012){result =  LatLng(22.330588,114.204642)}
-//        if(minor==1404510013){result =  LatLng(22.330368,114.20464)}
-//        if(minor==1404520013){result =  LatLng(22.330368,114.20464)}
-//        if(minor==2404510013){result =  LatLng(22.330368,114.20464)}
-//        if(minor==2404520013){result =  LatLng(22.330368,114.20464)}
-//        if(minor==3404510013){result =  LatLng(22.330368,114.20464)}
-//        if(minor==3404520013){result =  LatLng(22.330368,114.20464)}
-//        if(minor==4404510013){result =  LatLng(22.330368,114.20464)}
-//        if(minor==4404520013){result =  LatLng(22.330368,114.20464)}
-//        if(minor==1404510014){result =  LatLng(22.330143,114.204641)}
-//        if(minor==1404520014){result =  LatLng(22.330143,114.204641)}
-//        if(minor==2404510014){result =  LatLng(22.330143,114.204641)}
-//        if(minor==2404520014){result =  LatLng(22.330143,114.204641)}
-//        if(minor==3404510014){result =  LatLng(22.330143,114.204641)}
-//        if(minor==3404520014){result =  LatLng(22.330143,114.204641)}
-//        if(minor==4404510014){result =  LatLng(22.330143,114.204641)}
-//        if(minor==4404520014){result =  LatLng(22.330143,114.204641)}
-//        if(minor==1404510015){result =  LatLng(22.329945,114.204632)}
-//        if(minor==1404520015){result =  LatLng(22.329945,114.204632)}
-//        if(minor==2404510015){result =  LatLng(22.329945,114.204632)}
-//        if(minor==2404520015){result =  LatLng(22.329945,114.204632)}
-//        if(minor==3404510015){result =  LatLng(22.329945,114.204632)}
-//        if(minor==3404520015){result =  LatLng(22.329945,114.204632)}
-//        if(minor==4404510015){result =  LatLng(22.329945,114.204632)}
-//        if(minor==4404520015){result =  LatLng(22.329945,114.204632)}
-//        if(minor==1404510016){result =  LatLng(22.329721,114.204622)}
-//        if(minor==1404520016){result =  LatLng(22.329721,114.204622)}
-//        if(minor==2404510016){result =  LatLng(22.329721,114.204622)}
-//        if(minor==2404520016){result =  LatLng(22.329721,114.204622)}
-//        if(minor==3404510016){result =  LatLng(22.329721,114.204622)}
-//        if(minor==3404520016){result =  LatLng(22.329721,114.204622)}
-//        if(minor==4404510016){result =  LatLng(22.329721,114.204622)}
-//        if(minor==4404520016){result =  LatLng(22.329721,114.204622)}
-//        if(minor==1404510017){result =  LatLng(22.32952,114.204611)}
-//        if(minor==1404520017){result =  LatLng(22.32952,114.204611)}
-//        if(minor==2404510017){result =  LatLng(22.32952,114.204611)}
-//        if(minor==2404520017){result =  LatLng(22.32952,114.204611)}
-//        if(minor==3404510017){result =  LatLng(22.32952,114.204611)}
-//        if(minor==3404520017){result =  LatLng(22.32952,114.204611)}
-//        if(minor==4404510017){result =  LatLng(22.32952,114.204611)}
-//        if(minor==4404520017){result =  LatLng(22.32952,114.204611)}
-//        if(minor==1404510018){result =  LatLng(22.329291,114.204601)}
-//        if(minor==1404520018){result =  LatLng(22.329291,114.204601)}
-//        if(minor==2404510018){result =  LatLng(22.329291,114.204601)}
-//        if(minor==2404520018){result =  LatLng(22.329291,114.204601)}
-//        if(minor==3404510018){result =  LatLng(22.329291,114.204601)}
-//        if(minor==3404520018){result =  LatLng(22.329291,114.204601)}
-//        if(minor==4404510018){result =  LatLng(22.329291,114.204601)}
-//        if(minor==4404520018){result =  LatLng(22.329291,114.204601)}
-//        if(minor==1404510019){result =  LatLng(22.329078,114.204591)}
-//        if(minor==1404520019){result =  LatLng(22.329078,114.204591)}
-//        if(minor==2404510019){result =  LatLng(22.329078,114.204591)}
-//        if(minor==2404520019){result =  LatLng(22.329078,114.204591)}
-//        if(minor==3404510019){result =  LatLng(22.329078,114.204591)}
-//        if(minor==3404520019){result =  LatLng(22.329078,114.204591)}
-//        if(minor==4404510019){result =  LatLng(22.329078,114.204591)}
-//        if(minor==4404520019){result =  LatLng(22.329078,114.204591)}
-//        if(minor==1404510020){result =  LatLng(22.328862,114.204576)}
-//        if(minor==1404520020){result =  LatLng(22.328862,114.204576)}
-//        if(minor==2404510020){result =  LatLng(22.328862,114.204576)}
-//        if(minor==2404520020){result =  LatLng(22.328862,114.204576)}
-//        if(minor==3404510020){result =  LatLng(22.328862,114.204576)}
-//        if(minor==3404520020){result =  LatLng(22.328862,114.204576)}
-//        if(minor==4404510020){result =  LatLng(22.328862,114.204576)}
-//        if(minor==4404520020){result =  LatLng(22.328862,114.204576)}
-//        //Sheung Yuet Road
-//        if(minor==1406510001){result =  LatLng(22.321932,114.210415)}
-//        if(minor==1406520001){result =  LatLng(22.321932,114.210415)}
-//        if(minor==2406510001){result =  LatLng(22.321932,114.210415)}
-//        if(minor==2406520001){result =  LatLng(22.321932,114.210415)}
-//        if(minor==3406510001){result =  LatLng(22.321932,114.210415)}
-//        if(minor==3406520001){result =  LatLng(22.321932,114.210415)}
-//        if(minor==4406510001){result =  LatLng(22.321932,114.210415)}
-//        if(minor==4406520001){result =  LatLng(22.321932,114.210415)}
-//        if(minor==1406510002){result =  LatLng(22.321653,114.209476)}
-//        if(minor==1406520002){result =  LatLng(22.321653,114.209476)}
-//        if(minor==2406510002){result =  LatLng(22.321653,114.209476)}
-//        if(minor==2406520002){result =  LatLng(22.321653,114.209476)}
-//        if(minor==3406510002){result =  LatLng(22.321653,114.209476)}
-//        if(minor==3406520002){result =  LatLng(22.321653,114.209476)}
-//        if(minor==4406510002){result =  LatLng(22.321653,114.209476)}
-//        if(minor==4406520002){result =  LatLng(22.321653,114.209476)}
-//        if(minor==1406510003){result =  LatLng(22.321771,114.210473)}
-//        if(minor==1406520003){result =  LatLng(22.321771,114.210473)}
-//        if(minor==2406510003){result =  LatLng(22.321771,114.210473)}
-//        if(minor==2406520003){result =  LatLng(22.321771,114.210473)}
-//        if(minor==3406510003){result =  LatLng(22.321771,114.210473)}
-//        if(minor==3406520003){result =  LatLng(22.321771,114.210473)}
-//        if(minor==4406510003){result =  LatLng(22.321771,114.210473)}
-//        if(minor==4406520003){result =  LatLng(22.321771,114.210473)}
-//        if(minor==1406510004){result =  LatLng(22.321902,114.210126)}
-//        if(minor==1406520004){result =  LatLng(22.321902,114.210126)}
-//        if(minor==2406510004){result =  LatLng(22.321902,114.210126)}
-//        if(minor==2406520004){result =  LatLng(22.321902,114.210126)}
-//        if(minor==3406510004){result =  LatLng(22.321902,114.210126)}
-//        if(minor==3406520004){result =  LatLng(22.321902,114.210126)}
-//        if(minor==4406510004){result =  LatLng(22.321902,114.210126)}
-//        if(minor==4406520004){result =  LatLng(22.321902,114.210126)}
-//        if(minor==1406510005){result =  LatLng(22.321733,114.21014)}
-//        if(minor==1406520005){result =  LatLng(22.321733,114.21014)}
-//        if(minor==2406510005){result =  LatLng(22.321733,114.21014)}
-//        if(minor==2406520005){result =  LatLng(22.321733,114.21014)}
-//        if(minor==3406510005){result =  LatLng(22.321733,114.21014)}
-//        if(minor==3406520005){result =  LatLng(22.321733,114.21014)}
-//        if(minor==4406510005){result =  LatLng(22.321733,114.21014)}
-//        if(minor==4406520005){result =  LatLng(22.321733,114.21014)}
-//        if(minor==1406510006){result =  LatLng(22.321861,114.209788)}
-//        if(minor==1406520006){result =  LatLng(22.321861,114.209788)}
-//        if(minor==2406510006){result =  LatLng(22.321861,114.209788)}
-//        if(minor==2406520006){result =  LatLng(22.321861,114.209788)}
-//        if(minor==3406510006){result =  LatLng(22.321861,114.209788)}
-//        if(minor==3406520006){result =  LatLng(22.321861,114.209788)}
-//        if(minor==4406510006){result =  LatLng(22.321861,114.209788)}
-//        if(minor==4406520006){result =  LatLng(22.321861,114.209788)}
-//        if(minor==1406510007){result =  LatLng(22.321696,114.209811)}
-//        if(minor==1406520007){result =  LatLng(22.321696,114.209811)}
-//        if(minor==2406510007){result =  LatLng(22.321696,114.209811)}
-//        if(minor==2406520007){result =  LatLng(22.321696,114.209811)}
-//        if(minor==3406510007){result =  LatLng(22.321696,114.209811)}
-//        if(minor==3406520007){result =  LatLng(22.321696,114.209811)}
-//        if(minor==4406510007){result =  LatLng(22.321696,114.209811)}
-//        if(minor==4406520007){result =  LatLng(22.321696,114.209811)}
-//        if(minor==1406510008){result =  LatLng(22.3218,114.209146)}
-//        if(minor==1406520008){result =  LatLng(22.3218,114.209146)}
-//        if(minor==2406510008){result =  LatLng(22.3218,114.209146)}
-//        if(minor==2406520008){result =  LatLng(22.3218,114.209146)}
-//        if(minor==3406510008){result =  LatLng(22.3218,114.209146)}
-//        if(minor==3406520008){result =  LatLng(22.3218,114.209146)}
-//        if(minor==4406510008){result =  LatLng(22.3218,114.209146)}
-//        if(minor==4406520008){result =  LatLng(22.3218,114.209146)}
-//        if(minor==1406510009){result =  LatLng(22.321621,114.209169)}
-//        if(minor==1406520009){result =  LatLng(22.321621,114.209169)}
-//        if(minor==2406510009){result =  LatLng(22.321621,114.209169)}
-//        if(minor==2406520009){result =  LatLng(22.321621,114.209169)}
-//        if(minor==3406510009){result =  LatLng(22.321621,114.209169)}
-//        if(minor==3406520009){result =  LatLng(22.321621,114.209169)}
-//        if(minor==4406510009){result =  LatLng(22.321621,114.209169)}
-//        if(minor==4406520009){result =  LatLng(22.321621,114.209169)}
-//        if(minor==1406510010){result =  LatLng(22.321742,114.208833)}
-//        if(minor==1406520010){result =  LatLng(22.321742,114.208833)}
-//        if(minor==2406510010){result =  LatLng(22.321742,114.208833)}
-//        if(minor==2406520010){result =  LatLng(22.321742,114.208833)}
-//        if(minor==3406510010){result =  LatLng(22.321742,114.208833)}
-//        if(minor==3406520010){result =  LatLng(22.321742,114.208833)}
-//        if(minor==4406510010){result =  LatLng(22.321742,114.208833)}
-//        if(minor==4406520010){result =  LatLng(22.321742,114.208833)}
-//        if(minor==1406510011){result =  LatLng(22.321593,114.20885)}
-//        if(minor==1406520011){result =  LatLng(22.321593,114.20885)}
-//        if(minor==2406510011){result =  LatLng(22.321593,114.20885)}
-//        if(minor==2406520011){result =  LatLng(22.321593,114.20885)}
-//        if(minor==3406510011){result =  LatLng(22.321593,114.20885)}
-//        if(minor==3406520011){result =  LatLng(22.321593,114.20885)}
-//        if(minor==4406510011){result =  LatLng(22.321593,114.20885)}
-//        if(minor==4406520011){result =  LatLng(22.321593,114.20885)}
-//        if(minor==1406510012){result =  LatLng(22.321711,114.208481)}
-//        if(minor==1406520012){result =  LatLng(22.321711,114.208481)}
-//        if(minor==2406510012){result =  LatLng(22.321711,114.208481)}
-//        if(minor==2406520012){result =  LatLng(22.321711,114.208481)}
-//        if(minor==3406510012){result =  LatLng(22.321711,114.208481)}
-//        if(minor==3406520012){result =  LatLng(22.321711,114.208481)}
-//        if(minor==4406510012){result =  LatLng(22.321711,114.208481)}
-//        if(minor==4406520012){result =  LatLng(22.321711,114.208481)}
-//        if(minor==1406510013){result =  LatLng(22.321563,114.208497)}
-//        if(minor==1406520013){result =  LatLng(22.321563,114.208497)}
-//        if(minor==2406510013){result =  LatLng(22.321563,114.208497)}
-//        if(minor==2406520013){result =  LatLng(22.321563,114.208497)}
-//        if(minor==3406510013){result =  LatLng(22.321563,114.208497)}
-//        if(minor==3406520013){result =  LatLng(22.321563,114.208497)}
-//        if(minor==4406510013){result =  LatLng(22.321563,114.208497)}
-//        if(minor==4406520013){result =  LatLng(22.321563,114.208497)}
-//        if(minor==1406510014){result =  LatLng(22.321683,114.208174)}
-//        if(minor==1406520014){result =  LatLng(22.321683,114.208174)}
-//        if(minor==2406510014){result =  LatLng(22.321683,114.208174)}
-//        if(minor==2406520014){result =  LatLng(22.321683,114.208174)}
-//        if(minor==3406510014){result =  LatLng(22.321683,114.208174)}
-//        if(minor==3406520014){result =  LatLng(22.321683,114.208174)}
-//        if(minor==4406510014){result =  LatLng(22.321683,114.208174)}
-//        if(minor==4406520014){result =  LatLng(22.321683,114.208174)}
-//        if(minor==1406510015){result =  LatLng(22.321535,114.20819)}
-//        if(minor==1406520015){result =  LatLng(22.321535,114.20819)}
-//        if(minor==2406510015){result =  LatLng(22.321535,114.20819)}
-//        if(minor==2406520015){result =  LatLng(22.321535,114.20819)}
-//        if(minor==3406510015){result =  LatLng(22.321535,114.20819)}
-//        if(minor==3406520015){result =  LatLng(22.321535,114.20819)}
-//        if(minor==4406510015){result =  LatLng(22.321535,114.20819)}
-//        if(minor==4406520015){result =  LatLng(22.321535,114.20819)}
-//        if(minor==1406510016){result =  LatLng(22.321647,114.207772)}
-//        if(minor==1406520016){result =  LatLng(22.321647,114.207772)}
-//        if(minor==2406510016){result =  LatLng(22.321647,114.207772)}
-//        if(minor==2406520016){result =  LatLng(22.321647,114.207772)}
-//        if(minor==3406510016){result =  LatLng(22.321647,114.207772)}
-//        if(minor==3406520016){result =  LatLng(22.321647,114.207772)}
-//        if(minor==4406510016){result =  LatLng(22.321647,114.207772)}
-//        if(minor==4406520016){result =  LatLng(22.321647,114.207772)}
-//        if(minor==1406510017){result =  LatLng(22.3215,114.207796)}
-//        if(minor==1406520017){result =  LatLng(22.3215,114.207796)}
-//        if(minor==2406510017){result =  LatLng(22.3215,114.207796)}
-//        if(minor==2406520017){result =  LatLng(22.3215,114.207796)}
-//        if(minor==3406510017){result =  LatLng(22.3215,114.207796)}
-//        if(minor==3406520017){result =  LatLng(22.3215,114.207796)}
-//        if(minor==4406510017){result =  LatLng(22.3215,114.207796)}
-//        if(minor==4406520017){result =  LatLng(22.3215,114.207796)}
-//        if(minor==1406510018){result =  LatLng(22.321826,114.209468)}
-//        if(minor==1406520018){result =  LatLng(22.321826,114.209468)}
-//        if(minor==2406510018){result =  LatLng(22.321826,114.209468)}
-//        if(minor==2406520018){result =  LatLng(22.321826,114.209468)}
-//        if(minor==3406510018){result =  LatLng(22.321826,114.209468)}
-//        if(minor==3406520018){result =  LatLng(22.321826,114.209468)}
-//        if(minor==4406510018){result =  LatLng(22.321826,114.209468)}
-//        if(minor==4406520018){result =  LatLng(22.321826,114.209468)}
-//        if(minor==1406610001){result =  LatLng(22.322014,114.211141)}
-//        if(minor==1406620001){result =  LatLng(22.322014,114.211141)}
-//        if(minor==2406610001){result =  LatLng(22.322014,114.211141)}
-//        if(minor==2406620001){result =  LatLng(22.322014,114.211141)}
-//        if(minor==3406610001){result =  LatLng(22.322014,114.211141)}
-//        if(minor==3406620001){result =  LatLng(22.322014,114.211141)}
-//        if(minor==4406610001){result =  LatLng(22.322014,114.211141)}
-//        if(minor==4406620001){result =  LatLng(22.322014,114.211141)}
-//        if(minor==1406610002){result =  LatLng(22.32184,114.211153)}
-//        if(minor==1406620002){result =  LatLng(22.32184,114.211153)}
-//        if(minor==2406610002){result =  LatLng(22.32184,114.211153)}
-//        if(minor==2406620002){result =  LatLng(22.32184,114.211153)}
-//        if(minor==3406610002){result =  LatLng(22.32184,114.211153)}
-//        if(minor==3406620002){result =  LatLng(22.32184,114.211153)}
-//        if(minor==4406610002){result =  LatLng(22.32184,114.211153)}
-//        if(minor==4406620002){result =  LatLng(22.32184,114.211153)}
-//        if(minor==1406610003){result =  LatLng(22.321976,114.2108)}
-//        if(minor==1406620003){result =  LatLng(22.321976,114.2108)}
-//        if(minor==2406610003){result =  LatLng(22.321976,114.2108)}
-//        if(minor==2406620003){result =  LatLng(22.321976,114.2108)}
-//        if(minor==3406610003){result =  LatLng(22.321976,114.2108)}
-//        if(minor==3406620003){result =  LatLng(22.321976,114.2108)}
-//        if(minor==4406610003){result =  LatLng(22.321976,114.2108)}
-//        if(minor==4406620003){result =  LatLng(22.321976,114.2108)}
-//        if(minor==1406610004){result =  LatLng(22.321801,114.210817)}
-//        if(minor==1406620004){result =  LatLng(22.321801,114.210817)}
-//        if(minor==2406610004){result =  LatLng(22.321801,114.210817)}
-//        if(minor==2406620004){result =  LatLng(22.321801,114.210817)}
-//        if(minor==3406610004){result =  LatLng(22.321801,114.210817)}
-//        if(minor==3406620004){result =  LatLng(22.321801,114.210817)}
-//        if(minor==4406610004){result =  LatLng(22.321801,114.210817)}
-//        if(minor==4406620004){result =  LatLng(22.321801,114.210817)}
-//        if(minor==1406610005){result =  LatLng(22.322038,114.211375)}
-//        if(minor==1406620005){result =  LatLng(22.322038,114.211375)}
-//        if(minor==2406610005){result =  LatLng(22.322038,114.211375)}
-//        if(minor==2406620005){result =  LatLng(22.322038,114.211375)}
-//        if(minor==3406610005){result =  LatLng(22.322038,114.211375)}
-//        if(minor==3406620005){result =  LatLng(22.322038,114.211375)}
-//        if(minor==4406610005){result =  LatLng(22.322038,114.211375)}
-//        if(minor==4406620005){result =  LatLng(22.322038,114.211375)}
-//        if(minor==1406610006){result =  LatLng(22.32187,114.211365)}
-//        if(minor==1406620006){result =  LatLng(22.32187,114.211365)}
-//        if(minor==2406610006){result =  LatLng(22.32187,114.211365)}
-//        if(minor==2406620006){result =  LatLng(22.32187,114.211365)}
-//        if(minor==3406610006){result =  LatLng(22.32187,114.211365)}
-//        if(minor==3406620006){result =  LatLng(22.32187,114.211365)}
-//        if(minor==4406610006){result =  LatLng(22.32187,114.211365)}
-//        if(minor==4406620006){result =  LatLng(22.32187,114.211365)}
+        //科学园
+                if(minor==1246810001){result = LatLng (22.4251219209973,114.212121426535)}//L1
+                if(minor==1246820001){result = LatLng (22.4251219209973,114.212121426535)}
+                if(minor==2246810001){result = LatLng (22.4251219209973,114.212121426535)}
+                if(minor==2246820001){result = LatLng (22.4251219209973,114.212121426535)}
+                if(minor==3246820001){result = LatLng (22.4251219209973,114.212121426535)}
+                if(minor==4246820001){result = LatLng (22.4251219209973,114.212121426535)}
+
+                if(minor==1246810002){result = LatLng (22.425319848187,114.211843628175)}//L2
+                if(minor==1246820002){result = LatLng (22.425319848187,114.211843628175)}
+                if(minor==2246810002){result = LatLng (22.425319848187,114.211843628175)}
+                if(minor==2246820002){result = LatLng (22.425319848187,114.211843628175)}
+                if(minor==3246820002){result = LatLng (22.425319848187,114.211843628175)}
+                if(minor==4246820002){result = LatLng (22.425319848187,114.211843628175)}
+
+                if(minor==1246810003){result = LatLng (22.4250049347749,114.212191735778)}//L3
+                if(minor==1246820003){result = LatLng (22.4250049347749,114.212191735778)}
+                if(minor==2246810003){result = LatLng (22.4250049347749,114.212191735778)}
+                if(minor==2246820003){result = LatLng (22.4250049347749,114.212191735778)}
+                if(minor==3246820003){result = LatLng (22.4250049347749,114.212191735778)}
+                if(minor==4246820003){result = LatLng (22.4250049347749,114.212191735778)}
+
+                if(minor==1246810004){result = LatLng (22.4251585474081,114.21187384273)}//L4
+                if(minor==1246820004){result = LatLng (22.4251585474081,114.21187384273)}
+                if(minor==2246810004){result = LatLng (22.4251585474081,114.21187384273)}
+                if(minor==2246820004){result = LatLng (22.4251585474081,114.21187384273)}
+                if(minor==3246820004){result = LatLng (22.4251585474081,114.21187384273)}
+                if(minor==4246820004){result = LatLng (22.4251585474081,114.21187384273)}
+
+                if(minor==1246810005){result = LatLng (22.424941767723,114.211884027112)}//L5
+                if(minor==1246820005){result = LatLng (22.424941767723,114.211884027112)}
+                if(minor==2246810005){result = LatLng (22.424941767723,114.211884027112)}
+                if(minor==2246820005){result = LatLng (22.424941767723,114.211884027112)}
+                if(minor==3246820005){result = LatLng (22.424941767723,114.211884027112)}
+                if(minor==4246820005){result = LatLng (22.424941767723,114.211884027112)}
+
+                if(minor==1246810006){result = LatLng (22.425277856,114.211285567)}//L6
+                if(minor==1246820006){result = LatLng (22.425277856,114.211285567)}
+                if(minor==2246810006){result = LatLng (22.425277856,114.211285567)}
+                if(minor==2246820006){result = LatLng (22.425277856,114.211285567)}
+                if(minor==3246820006){result = LatLng (22.425277856,114.211285567)}
+                if(minor==4246820006){result = LatLng (22.425277856,114.211285567)}
+
+                if(minor==1246810007){result = LatLng (22.4255147745557,114.211357105382)}//L7
+                if(minor==1246820007){result = LatLng (22.4255147745557,114.211357105382)}
+                if(minor==2246810007){result = LatLng (22.4255147745557,114.211357105382)}
+                if(minor==2246820007){result = LatLng (22.4255147745557,114.211357105382)}
+                if(minor==3246820007){result = LatLng (22.4255147745557,114.211357105382)}
+                if(minor==4246820007){result = LatLng (22.4255147745557,114.211357105382)}
+
+                if(minor==1246810008){result = LatLng (22.4256182662278,114.210688483452)}//L8
+                if(minor==1246820008){result = LatLng (22.4256182662278,114.210688483452)}
+                if(minor==2246810008){result = LatLng (22.4256182662278,114.210688483452)}
+                if(minor==2246820008){result = LatLng (22.4256182662278,114.210688483452)}
+                if(minor==3246820008){result = LatLng (22.4256182662278,114.210688483452)}
+                if(minor==4246820008){result = LatLng (22.4256182662278,114.210688483452)}
+
+                if(minor==1246810009){result = LatLng (22.4259879454667,114.210383129655)}//L9
+                if(minor==1246820009){result = LatLng (22.4259879454667,114.210383129655)}
+                if(minor==2246810009){result = LatLng (22.4259879454667,114.210383129655)}
+                if(minor==2246820009){result = LatLng (22.4259879454667,114.210383129655)}
+                if(minor==3246820009){result = LatLng (22.4259879454667,114.210383129655)}
+                if(minor==4246820009){result = LatLng (22.4259879454667,114.210383129655)}
+
+                if(minor==1246810010){result = LatLng (22.426600972108,114.210299923315)}//L10
+                if(minor==1246820010){result = LatLng (22.426600972108,114.210299923315)}
+                if(minor==2246810010){result = LatLng (22.426600972108,114.210299923315)}
+                if(minor==2246820010){result = LatLng (22.426600972108,114.210299923315)}
+                if(minor==3246820010){result = LatLng (22.426600972108,114.210299923315)}
+                if(minor==4246820010){result = LatLng (22.426600972108,114.210299923315)}
+
+        //        if(minor==1246510006L){result = LatLng (22.4256182662278,114.210688483452)}//L8
+        //        if(minor==1246520006L){result = LatLng (22.4256182662278,114.210688483452)}
+        //        if(minor==2246510006L){result = LatLng (22.4256182662278,114.210688483452)}
+        //        if(minor==2246520006L){result = LatLng (22.4256182662278,114.210688483452)}
+        //        if(minor==3246520006L){result = LatLng (22.4256182662278,114.210688483452)}
+        //        if(minor==4246520006L){result = LatLng (22.4256182662278,114.210688483452)}
+        //
+        //        if(minor==1246510007L){result = LatLng (22.4259879454667,114.210383129655)}//L9
+        //        if(minor==1246520007L){result = LatLng (22.4259879454667,114.210383129655)}
+        //        if(minor==2246510007L){result = LatLng (22.4259879454667,114.210383129655)}
+        //        if(minor==2246520007L){result = LatLng (22.4259879454667,114.210383129655)}
+        //        if(minor==3246520007L){result = LatLng (22.4259879454667,114.210383129655)}
+        //        if(minor==4246520007L){result = LatLng (22.4259879454667,114.210383129655)}
+        //
+        //        if(minor==1246510008L){result = LatLng (22.426600972108,114.210299923315)}//L10
+        //        if(minor==1246520008L){result = LatLng (22.426600972108,114.210299923315)}
+        //        if(minor==2246510008L){result = LatLng (22.426600972108,114.210299923315)}
+        //        if(minor==2246520008L){result = LatLng (22.426600972108,114.210299923315)}
+        //        if(minor==3246520008L){result = LatLng (22.426600972108,114.210299923315)}
+        //        if(minor==4246520008L){result = LatLng (22.426600972108,114.210299923315)}
+
+                if(minor==1246510001){result = LatLng (22.4263690275328,114.210048324024)}//L11
+                if(minor==1246520001){result = LatLng (22.4263690275328,114.210048324024)}
+                if(minor==2246510001){result = LatLng (22.4263690275328,114.210048324024)}
+                if(minor==2246520001){result = LatLng (22.4263690275328,114.210048324024)}
+                if(minor==3246520001){result = LatLng (22.4263690275328,114.210048324024)}
+                if(minor==4246520001){result = LatLng (22.4263690275328,114.210048324024)}
+
+                if(minor==1246510002){result = LatLng (22.4262869869028,114.209755538335)}//L12
+                if(minor==1246520002){result = LatLng (22.4262869869028,114.209755538335)}
+                if(minor==2246510002){result = LatLng (22.4262869869028,114.209755538335)}
+                if(minor==2246520002){result = LatLng (22.4262869869028,114.209755538335)}
+                if(minor==3246520002){result = LatLng (22.4262869869028,114.209755538335)}
+                if(minor==4246520002){result = LatLng (22.4262869869028,114.209755538335)}
+
+                if(minor==1246510003){result = LatLng (22.4266760316187,114.209393923124)}//L13
+                if(minor==1246520003){result = LatLng (22.4266760316187,114.209393923124)}
+                if(minor==2246510003){result = LatLng (22.4266760316187,114.209393923124)}
+                if(minor==2246520003){result = LatLng (22.4266760316187,114.209393923124)}
+                if(minor==3246520003){result = LatLng (22.4266760316187,114.209393923124)}
+                if(minor==4246520003){result = LatLng (22.4266760316187,114.209393923124)}
+
+                if(minor==1246510004){result = LatLng (22.4268645151946,114.208913329486)}//L14
+                if(minor==1246520004){result = LatLng (22.4268645151946,114.208913329486)}
+                if(minor==2246510004){result = LatLng (22.4268645151946,114.208913329486)}
+                if(minor==2246520004){result = LatLng (22.4268645151946,114.208913329486)}
+                if(minor==3246520004){result = LatLng (22.4268645151946,114.208913329486)}
+                if(minor==4246520004){result = LatLng (22.4268645151946,114.208913329486)}
+
+                if(minor==1246510005){result = LatLng (22.4272088028801,114.20875849661)}//L15
+                if(minor==1246520005){result = LatLng (22.4272088028801,114.20875849661)}
+                if(minor==2246510005){result = LatLng (22.4272088028801,114.20875849661)}
+                if(minor==2246520005){result = LatLng (22.4272088028801,114.20875849661)}
+                if(minor==3246520005){result = LatLng (22.4272088028801,114.20875849661)}
+                if(minor==4246520005){result = LatLng (22.4272088028801,114.20875849661)}
+                //第0位的1，2，3，4代表一个灯柱上的四个位置，1，2位置放置weakbeacon，3，4位置放置strongbeacon
+                // 第5位代表weak或strong beacon
+                //最后一位代表当前灯柱
+
 
         return  result
     }

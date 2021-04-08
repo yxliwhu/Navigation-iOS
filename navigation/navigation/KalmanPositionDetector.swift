@@ -41,7 +41,7 @@ class KalmanPositionDetector {
     var currentIndex:Int = 0
     var BeaconUsedRecord:Bool = false
     var BeaconUsed:iBeacon
-    var BeaconSignalThreshold:Float = -80.0
+    var BeaconSignalThreshold:Float = -88.0
     var weakMinorRssiIndex = [Int64:[[[Int]]]]()
     var timeWindow:Int = 2
     var frequency:Int = 3

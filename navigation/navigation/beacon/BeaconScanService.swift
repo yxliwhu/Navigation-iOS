@@ -44,7 +44,7 @@ class BeaconScanService {
     var StrongIndex:Bool = false
     var JudgeNowUsedAngleToWrong:Bool = false
     //////////Thresthold Settings
-    var WeekBeaconRSSIRemoveStrongBeacon:Double = -78.0 // Week beacon filter threshold
+    var WeekBeaconRSSIRemoveStrongBeacon:Double = -88.0 // Week beacon filter threshold
     var BeaconSignalDetectWindow:Int64 = 3000 // Week beacon signal detection time window
     var MinWeekBeaconRSSINumber:Int = 2 //Min detected week beacon number （for iOS, there only 1 sample for 1 second）
 //    var StrongBeaconStrongestRSSINumberThreshold:Int = 20
@@ -600,7 +600,7 @@ class BeaconScanService {
                 }
             }
         }
-        if (keyValue != 0 && rssiMax > -80) {
+        if (keyValue != 0 && rssiMax > self.WeekBeaconRSSIRemoveStrongBeacon) {
             let keyLightID = BeaconPositioningAlgorithm.LightID(keyValue)
             if (minorNoLongerStore!.contains(keyLightID)) {
             } else {

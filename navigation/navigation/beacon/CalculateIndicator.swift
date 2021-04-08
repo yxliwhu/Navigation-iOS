@@ -7,7 +7,7 @@
 
 import Foundation
 
-var rssiThreshold: Double = -80.0
+var rssiThreshold: Double = -88.0
 
 class CalculateIndicator {
     
