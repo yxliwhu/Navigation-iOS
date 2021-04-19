@@ -10,8 +10,8 @@ import Foundation
 class HeadingLibrary {
     static var onePair:Bool = false
     static var StreetHeadingLib:[[Double]] = [
-        [23000001.0, 23000002.0, 194.0],
-        [23000002.0, 23000001.0, 14.0],
+        [23450001.0, 23450002.0, 194.0],
+        [23450002.0, 23450001.0, 14.0],
 
         //HKSTP
                     [24650002.0,24680008.0,127.6190519],//12-8

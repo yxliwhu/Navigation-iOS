@@ -14,10 +14,21 @@ class BeaconCoordinates {
         // 第5位代表weak或strong beacon
         
         //block Z test
-        if(minor==1230010001){result =  LatLng(22.30663909,114.1796612)}
-        if(minor==1230020001){result =  LatLng(22.30663909,114.1796612)}
-        if(minor==2230010002){result =  LatLng(22.3063801,114.1795741)}
-        if(minor==2230020002){result =  LatLng(22.3063801,114.1795741)}
+        if(minor==1234510001){result =  LatLng(22.30663909,114.1796612)}
+        if(minor==2234510001){result =  LatLng(22.30663909,114.1796612)}
+        if(minor==1234520001){result =  LatLng(22.30663909,114.1796612)}
+        if(minor==2234520001){result =  LatLng(22.30663909,114.1796612)}
+        if(minor==3234520001){result =  LatLng(22.30663909,114.1796612)}
+        if(minor==4234520001){result =  LatLng(22.30663909,114.1796612)}
+    
+        if(minor==1234510002){result =  LatLng(22.3063801,114.1795741)}
+        if(minor==2234510002){result =  LatLng(22.3063801,114.1795741)}
+        if(minor==1234520002){result =  LatLng(22.3063801,114.1795741)}
+        if(minor==2234520002){result =  LatLng(22.3063801,114.1795741)}
+        if(minor==3234520002){result =  LatLng(22.3063801,114.1795741)}
+        if(minor==4234520002){result =  LatLng(22.3063801,114.1795741)}
+        
+
         //最后一位代表当前灯柱
         //科学园
                 if(minor==1246810001){result = LatLng (22.4251219209973,114.212121426535)}//L1
