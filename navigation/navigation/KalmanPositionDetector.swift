@@ -72,7 +72,7 @@ class KalmanPositionDetector {
     var key:Double = 0.0
     var stepLong:Float = 0.7
     var StepLenghtTimeDifference:Float = 1000.0
-    var userHeight:String
+    var userHeight:String = "1.76"
     
     var BeaconList = [Double]()
     var TurnAngleList = [Double]()
@@ -177,7 +177,7 @@ class KalmanPositionDetector {
         
         if (self.BeaconUsedRecord) {
             self.BeaconUsedRecord = false
-            
+            // 这里应该是把所有的数据都存在了weakMinorRssiIndex中
             var RssiTime = [[Int]](repeating: [Int](repeating: 0, count: 2), count: 1)
             if (self.BeaconUsed.rssi > Int(self.BeaconSignalThreshold)) {//只有当RSSI大于-88，才会加入到weakMinorRssiIndex中
                 RssiTime[0][0] = self.BeaconUsed.rssi
@@ -201,7 +201,8 @@ class KalmanPositionDetector {
             for (k,v) in self.weakMinorRssiIndex {
                 let list = v
                 let timeIndex = list[0][0][1]
-                if ((self.currentIndex - timeIndex) > 10) {//当weakMinorRssiIndex里面存放的某个beacon的时间过于久远（和当前时间相隔超过10秒）就将其信息删除
+                //当weakMinorRssiIndex里面存放的某个beacon的时间过于久远（和当前时间相隔超过10秒）就将其信息删除
+                if ((self.currentIndex - timeIndex) > 10) {
                     rmKeys.append(k)
                 }
             }
@@ -237,7 +238,7 @@ class KalmanPositionDetector {
                 usedBeacon.rssi = minorRssi
                 self.BeaconUsed = usedBeacon
             }
-            //todo: when received weakbeacon is more than 3 times in 1 second, then remove previous weakbeacon in case PDR go back to prevoious beacon
+            //todo: when received weakbeacon is more than 3 times, then remove previous weakbeacon in case PDR go back to prevoious beacon
             let listNow = self.weakMinorRssiIndex[self.BeaconUsed.minor]
             if (listNow != nil && !listNow!.isEmpty && listNow!.count >= self.frequency) {
                 let indexNow = listNow![0][0][1]
@@ -331,7 +332,7 @@ class KalmanPositionDetector {
     }
     
     /*
-     Main enter point for the position calculation
+     Main enter point for the position calculation：From "StepDetector: self.getDetector().calculate()"
      */
     func calculate(){
         self.calculateDistanceChanged(self.data)//Calculate changed distance
@@ -370,7 +371,8 @@ class KalmanPositionDetector {
     func weakBeaconForPositioning(_ m_beacon: iBeacon, _ DistanceNow:[Double]) -> Bool {
         var result: Bool = true
         if (m_beacon.rssi >= Int(self.BeaconSignalThreshold) && BeaconCoordinates.positionFromBeacon(m_beacon.minor).latitude != -1){
-            let WeekBeaconPos = BeaconCoordinates.positionFromBeacon(m_beacon.minor)// get coordinates
+            let tempLightID = BeaconPositioningAlgorithm.LightID(m_beacon.minor)
+            let WeekBeaconPos = BeaconCoordinates.positionFromBeacon(tempLightID)// get coordinates
             if (self.weakMinorRssiIndex[m_beacon.minor] != nil && self.weakMinorRssiIndex[m_beacon.minor]!.count >= self.frequency) {//当某个weak beacon在同一个index中有至少三个RSSI大于-88
                 self.positionNow = BeaconCoordinates.positionFromBeacon(m_beacon.minor)
                 self.allDistancePast[0] = DistanceNow[0]
@@ -674,7 +676,8 @@ class KalmanPositionDetector {
     
     func PositionByBeacon(_ centerBeacon:Int64, _ RoadWidth:Double, _ velecity:Double) ->[Double]{
         var xy:[Double] = [0, 0] //initial return position
-        let POS = BeaconCoordinates.positionFromBeacon(centerBeacon) // get beacon position
+        let tempLightID = BeaconPositioningAlgorithm.LightID(centerBeacon)
+        let POS = BeaconCoordinates.positionFromBeacon(tempLightID) // get beacon position
         if (POS.latitude != -1) {
             let xy0 = self.algorithm.LatLongToDouble(POS) // convert to double value
             let R = SignalRange.SignalRange(centerBeacon) // get radius
@@ -689,7 +692,8 @@ class KalmanPositionDetector {
     
     
     func MatchTimeLooKforPosition(_ StoredPosition:[[Double]],_ KEYTimeSize:KeyTimeSize) -> [Double] {
-        let latLngPosBeacon = BeaconCoordinates.positionFromBeacon(KEYTimeSize.Key)// Get week beacon coordinates
+        let tempLightID = BeaconPositioningAlgorithm.LightID(KEYTimeSize.Key)
+        let latLngPosBeacon = BeaconCoordinates.positionFromBeacon(tempLightID)// Get week beacon coordinates
         var result:[Double] = [0.0, 0.0, 0.0, 0.0]
         _ = 10000000.0
         if (latLngPosBeacon.latitude != -1) {
@@ -804,8 +808,10 @@ class KalmanPositionDetector {
                     if (CalcaulteScale) {
                         //If there is no big turn in the process, do it
                         // Get two beacons' coordinates
-                        let POS1 = BeaconCoordinates.positionFromBeacon(Int64(self.BeaconList[0]))
-                        let POS2 = BeaconCoordinates.positionFromBeacon(Int64(self.BeaconList[1]))
+                        let tempLightID1 = BeaconPositioningAlgorithm.LightID(Int64(self.BeaconList[0]))
+                        let tempLightID2 = BeaconPositioningAlgorithm.LightID(Int64(self.BeaconList[1]))
+                        let POS1 = BeaconCoordinates.positionFromBeacon(tempLightID1)
+                        let POS2 = BeaconCoordinates.positionFromBeacon(tempLightID2)
                         if (POS1.latitude != -1 && POS2.latitude != -1) {
                             //Calculate distance between two beacons
                             let distancePos1Pos2 = Algorithm.Distance(POS1, POS2)

@@ -13,7 +13,7 @@ typealias GPSDataBlock = (_ pData: CLLocation) -> Void
 typealias HeadingDataBlock = (_ pData: CLHeading) -> Void
 
 class IBeaconHelper: NSObject {
-    static let scanUUID = "b19af004-7f2a-4972-8f39-37d26c29cb9e"
+    static let scanUUID = "B5B182C7-EAB1-4988-AA99-B5C1517008D8"
     static let scanIdentifier = "ibeacon location"
     static let shared = IBeaconHelper()
     
@@ -33,7 +33,7 @@ class IBeaconHelper: NSObject {
         //请求一直允许定位
         locationManager!.requestAlwaysAuthorization()
         let uuid = UUID(uuidString: IBeaconHelper.scanUUID)!
-        print(uuid.uuidString)
+//        print(uuid.uuidString)
         beaconRegion = CLBeaconRegion(uuid: uuid, identifier: IBeaconHelper.scanIdentifier)
         beaconRegion!.notifyEntryStateOnDisplay = false
         beaconSatisfying = CLBeaconIdentityConstraint(uuid: uuid)

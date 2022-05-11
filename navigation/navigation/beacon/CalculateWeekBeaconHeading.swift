@@ -4,6 +4,9 @@
 //
 //  Created by 郑旭 on 2021/1/26.
 //
+/*
+ Using Week Beacon infomation to calculation the heading information
+ */
 
 import Foundation
 
@@ -24,15 +27,14 @@ import Foundation
         var Heading = 800.0
         let tempClonedIndicatorMap = IndicatorMap
         var tempKeyIndicator = [Int64:[Double]]()
+        // Step1： Get info about weak beacon from the Indicator map
         for(k,v) in  tempClonedIndicatorMap {
             if((BeaconPositioningAlgorithm.JugeSingleStrongWeak(k) == 1)){
                 tempKeyIndicator[k] = v
             }else{}
         }
-
-        //todo Step1, get Indicator Map
         let ClonedIndicatorMap = tempKeyIndicator
-        //todo: Step2, Calculate each light's indicator value
+        //Step2： Calculate each light's indicator value
         var KeyIndicator = [Int64:Double]()
         for(k,_) in ClonedIndicatorMap{
             ///todo:put key and indicator in KeyIndicator   把weak的NowIndex取出

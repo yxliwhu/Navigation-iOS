@@ -121,8 +121,8 @@ class iBeaconClass{
     static func substring(_ str:String,_ from: Int, _ to: Int)->String{
         let startIndex = str.index(str.startIndex,offsetBy: from)
         let endIndex = str.index(str.startIndex,offsetBy: to)
-        
-        return String(str[startIndex..<endIndex])
+        let result = String(str[startIndex..<endIndex])
+        return result
     }
     /**
      * 转换十进制

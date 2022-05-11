@@ -59,7 +59,10 @@ class BeaconPositioningAlgorithm {
         return distance
     }
     
-    ///The function is to judge if beacon is strong, middle or weak
+    /*
+     The function is to judge if beacon is strong, middle or weak
+     Here 1 is weak beacon and 2 is strong beacon
+     */
     static func JugeSingleStrongWeak(_ id:Int64) -> Int{
         //Convert to string
         let ID = String(id)
@@ -74,6 +77,11 @@ class BeaconPositioningAlgorithm {
         return index
     }
     
+    /*
+     Make the key simple only get "BDDDD" form "A000BCDDDD":
+     B: 1 for lampost and 2 for non-lampost
+     DDDD: Installing position number
+     */
     static func LightID(_ id:Int64) -> Int64 {
         //Convert to string
         let ID = String(id)
@@ -92,13 +100,18 @@ class BeaconPositioningAlgorithm {
         return [[Double]](repeating: [Double](repeating: 0.0, count: n), count: m)
     }
     
+    /*
+     Calculate the position of the used based on the distances from strong beacon
+     Return:  strong beacon X, Y and Covariance_X, Covariance_Y
+     */
     static func CalculatePositionByDistance(_ KeyDistance:[Int64:[Double]]) -> [Double]{
+        let countThreshold = 30
         let size = KeyDistance.count
         let algorithm = Algorithm()
         var distances = [Double](repeating: 0.0, count: size)
         var BeaconKey = [Int64](repeating: 0, count: size)
-        var ininitialCoord:[Double] = [1000.0, 1000.0]
-        var count = 0
+        var ininitialCoord:[Double] = [1000, 1000]
+        var Count2 = 0
         _ = 0
         var e_current = 0.0
         var e_new = 0.0
@@ -109,7 +122,7 @@ class BeaconPositioningAlgorithm {
         var unitVar = 0.0
         var VarX = 0.0
         var VarY = 0.0
-        var Count = 0
+        var Count1 = 0
         
         var VarCovar:Matrix
         var selected_A_Matrix = Matrix(paramInt1: size,paramInt2: 2)
@@ -124,15 +137,18 @@ class BeaconPositioningAlgorithm {
         var residual_tran:Matrix
         do {
             for (k,v) in KeyDistance {
-                distances[Count] = v[0]
-                BeaconKey[Count] = k
+                distances[Count1] = v[0]
+                let tempLightID = BeaconPositioningAlgorithm.LightID(k)
+                BeaconKey[Count1] = tempLightID
+
                 ininitialCoord[0] = (ininitialCoord[0] + v[1]) // add all beacon coordinate north
                 ininitialCoord[1] = (ininitialCoord[1] + v[2]) // add all beacon coordinate east
-                Count = Count + 1
+                Count1 = Count1 + 1
             }
-            ininitialCoord[0] = ininitialCoord[0] / Double(Count) // improve initail coordinate accuracy
-            ininitialCoord[1] = ininitialCoord[1] / Double(Count) // improve initail coordinate accuracy
-            
+
+            ininitialCoord[0] = ininitialCoord[0] / Double(Count1) // improve initail coordinate accuracy
+            ininitialCoord[1] = ininitialCoord[1] / Double(Count1) // improve initail coordinate accuracy
+
             ///Set distance observation matrix
             let distanceMatrix = Matrix(paramInt1: size,paramInt2: 1)
             for i in 0..<size {
@@ -156,7 +172,8 @@ class BeaconPositioningAlgorithm {
             ///Set beacon coordinate matrix
             let beaconMatrix = Matrix(paramInt1: size,paramInt2: 2)
             for i in 0..<size {
-                let BeaconLatLon = BeaconCoordinates.positionFromBeacon(BeaconKey[i])
+                let tempLightID = BeaconPositioningAlgorithm.LightID(BeaconKey[i])
+                let BeaconLatLon = BeaconCoordinates.positionFromBeacon(tempLightID)
                 let xy = algorithm.LatLongToDouble(BeaconLatLon)
                 for j in 0..<2{
                     // set ROW = Beacon Size, Column =2, beacon coordinate matrix
@@ -171,7 +188,7 @@ class BeaconPositioningAlgorithm {
                 approxCoord.set(paramInt1: k, paramInt2: 0, paramDouble: ininitialCoord[k])
             }
             
-            while (count < 30) {
+            while (Count2 < countThreshold) {
                 /// update times
                 if (update) {
                     ///Calculate approximate distance matrix
@@ -186,7 +203,7 @@ class BeaconPositioningAlgorithm {
                     }
                     // set L matrix, got from model calculated distance minus approximate distance
                     L_Matrix = try distanceMatrix.minus(paramMatrix: approxDistanceMatrix)
-                    if (count == 0) {
+                    if (Count2 == 0) {
                         var dotProduct = [Double](repeating: 0.0, count: size)
                         for i in 0..<size {
                             dotProduct[i] = L_Matrix.get(paramInt1: i, paramInt2: 0) * L_Matrix.get(paramInt1: i, paramInt2: 0)
@@ -321,9 +338,9 @@ class BeaconPositioningAlgorithm {
                     lamda = lamda * 10 // set larger lamda value to update again
                     update = false
                 }
-                count = count + 1
+                Count2 = Count2 + 1
                 
-                if (count == 29) {
+                if (Count2 == (countThreshold - 1)) {
                     //Calculate error VTPV in last time
                     let A_mul_x = Matrix(paramInt1: size, paramInt2: 1)
                     var Ax = fixedArray(size, 1)
@@ -387,6 +404,8 @@ class BeaconPositioningAlgorithm {
         return resVal //Return strong beacon X, Y and Covariance
     }
     
+    
+    // Check the paramters please (sometimes the distance value is negative)
     static func CalculateDistanceByRSSI(_ Key:Int64, _ RSSI:Double) -> Double{
         let Beaconminor = BeaconPositioningAlgorithm.JugeSingleStrongWeak(Key)
         var a = 1.0
@@ -400,16 +419,19 @@ class BeaconPositioningAlgorithm {
             a = -211.97091652
             b = 157.74093691
             c = -0.00491896
-            //            a=-23.74820488
-            //            b=3.27895321
-            //            c=-0.03064923
+//            a = -23.74820488
+//            b = 3.27895321
+//            c = -0.03064923
         }
         let distance = a + b * (exp(c * RSSI))
         return distance
     }
-    
+    /*
+     Function: Using strong beacon rssi records to calculated distances
+     */
     static func CalculateDistanceMapByStrongBeacon(_ ibeacon:iBeacon, _ StoreBeaconSerise:[Int64:[TimeAverageRSSI]]) ->[Int64:[Double]] {
         
+        // Get all strong beacon records from all records (maybe the filter is not necessary considering having done in last stage)
         var StrongBeaconSerise = [Int64:[Double]]()
         if (StoreBeaconSerise.count >= 3) {
             for (key,value) in StoreBeaconSerise {
@@ -428,13 +450,12 @@ class BeaconPositioningAlgorithm {
             }
         }
         
-        //todo the stronger strong beacon is used in every smartlamp
+        // Get the stronger strong beacon is used in every smartlamp considering every lamppost have two strong beacon
         let StrongBeaconSeriseClone = StrongBeaconSerise
         var StrongBeaconOfLightSerise = [Int64:[Double]]()
         
         for (k,v) in StrongBeaconSeriseClone {
             let list = v
-            //第一个Long代表Light的ID,第二个Long代表Light上对应的strong beacon
             var LightIDAndStrongKey=[Int64:Int64]()
             let thisLightID = BeaconPositioningAlgorithm.LightID(k)
             if (LightIDAndStrongKey[thisLightID] != nil) {
@@ -453,7 +474,7 @@ class BeaconPositioningAlgorithm {
                 LightIDAndStrongKey[thisLightID]  = k
             }
         }
-        
+        // Calculate distances based on Rssi value of strong beacons
         var KeyDistance = [Int64:[Double]]()
         if (StrongBeaconOfLightSerise.count >= 3) {
             //if strong smartlamps are more than 3
@@ -467,10 +488,9 @@ class BeaconPositioningAlgorithm {
                 //Calculate average signal value of strong beacons
                 RSSIMean = sum / Double(arrayList.count)
                 var DistanceXY = [Double]()
-                //计算出人和strong beacon的距离
                 let distance = CalculateDistanceByRSSI(k, RSSIMean)
-                //返回该strong beacon的经纬度
-                let BL = BeaconCoordinates.positionFromBeacon(k)
+                let tempLightID = BeaconPositioningAlgorithm.LightID(k)
+                let BL = BeaconCoordinates.positionFromBeacon(tempLightID)
                 var xy:[Double] = [0, 0]
                 if (BL.latitude != -1 && BL.longitude != -1) {
                     let algorithm = Algorithm()

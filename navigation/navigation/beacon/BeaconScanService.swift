@@ -34,7 +34,8 @@ class BeaconScanService {
     var stepChange:Double = 0.0
     var RecordStartTime:Int64 = 0
     var returnNowGetTime:Int64 = 0
-    var StoreScannedBeacon:[Int64:[TimeAverageRSSI]]
+    var StoreScannedBeaconWeak:[Int64:[TimeAverageRSSI]]
+    var StoreScannedBeaconStrong:[Int64:[TimeAverageRSSI]]
     var StoreTempMaxRSSIofBeacon:[Int64:TimeAverageRSSI]
     var minorNoLongerStore:[Int64]?
     var findPeak:Bool = false
@@ -44,9 +45,9 @@ class BeaconScanService {
     var StrongIndex:Bool = false
     var JudgeNowUsedAngleToWrong:Bool = false
     //////////Thresthold Settings
-    var WeekBeaconRSSIRemoveStrongBeacon:Double = -88.0 // Week beacon filter threshold
+    var WeekBeaconRSSIRemoveStrongBeacon:Double = -86.0 // Week beacon filter threshold
     var BeaconSignalDetectWindow:Int64 = 3000 // Week beacon signal detection time window
-    var MinWeekBeaconRSSINumber:Int = 2 //Min detected week beacon number （for iOS, there only 1 sample for 1 second）
+    var MinWeakBeaconRSSINumber:Int = 2 //Min detected week beacon number （for iOS, there only 1 sample for 1 second）
 //    var StrongBeaconStrongestRSSINumberThreshold:Int = 20
     var BeaconNumber:Int = 10
     var StrongBeaconNumber:Int = 10
@@ -68,7 +69,8 @@ class BeaconScanService {
         self.BeaconEndInfo = [:]
         self.StrongBeacon = [:]
         self.NonZeroStrongMap = [:]
-        self.StoreScannedBeacon = [:]
+        self.StoreScannedBeaconWeak = [:]
+        self.StoreScannedBeaconStrong = [:]
         self.StoreTempMaxRSSIofBeacon = [:]
         self.minorSlope = [Int64:Double]()
         self.IndicatorMap = [Int64:[Double]]()
@@ -93,7 +95,12 @@ class BeaconScanService {
         self.minorSlope.removeAll()
     }
     
+    /*
+     Get average rssi value of each beacon for every second
+     This function is not useful for the iOS program beacuse the update frequency is 1Hz
+     */
     func updateAverageValues(_ beaconScanStartTime:Int64) {
+        print("TLee1",self.tempbeaconAverageValues.count)
         if (self.beaconAverageValues.count == 0) {
             for (k,v) in self.tempbeaconAverageValues {
                 let rssiUsed = calculateAverage(v)
@@ -156,6 +163,9 @@ class BeaconScanService {
         return Algorithm.formatDouble(sumValue / Double(count))
     }
     
+    /*
+     “beaconAverageValues” is the input of the algorithm
+     */
     func UsedputBeaconAverageValues(_ key:Int64, _ beaconScanStartTime:Int64, _ rssi:Double) {//和下面函数的区别在于这里的RSSI是平均值
         var list:[TimeAverageRSSI] = []
         var timeAverageRSSI:TimeAverageRSSI = TimeAverageRSSI()
@@ -177,6 +187,9 @@ class BeaconScanService {
         }
     }
     
+    /*
+     Put all scaned beacons to "tempbeaconAverageValues"
+     */
     func UsedputtempBeaconAverageValues(_ key:Int64, _ beaconScanStartTime:Int64, _ rssi:Double) {
         var list:[TimeAverageRSSI] = []
         var timeAverageRSSI:TimeAverageRSSI = TimeAverageRSSI()
@@ -189,6 +202,7 @@ class BeaconScanService {
             list.append(timeAverageRSSI)
         }
         self.tempbeaconAverageValues[key] = list
+        print("TLee2",self.tempbeaconAverageValues.count)
     }
     
     func BuildStrongBeaconMap() {
@@ -256,7 +270,7 @@ class BeaconScanService {
     func CalculateSlope(_ NonZeroStrongMap:[Int64:[TimeAverageRSSI]], _ rawbeaconMap:[Int64:[TimeAverageRSSI]]) {
         for (k,v) in rawbeaconMap {
             if (v.count == self.StrongBeaconNumber) {//StrongBeaconNumber = 15
-                if (self.NonZeroStrongMap[k]!.count >= self.NonZeroStrongRSSINumber) {//把RSSI=0的值去掉NonZeroStrongRSSINumber = 8
+                if (self.NonZeroStrongMap[k] != nil && self.NonZeroStrongMap[k]!.count >= self.NonZeroStrongRSSINumber) {//把RSSI=0的值去掉NonZeroStrongRSSINumber = 8
                     var rssi:[Double] = []
                     var time:[Double] = []
                     let list = NonZeroStrongMap[k]
@@ -546,27 +560,26 @@ class BeaconScanService {
         }
     }
     
-    // Get the peak of the RSSI series if the beacon is Strong Beacon
+    // Get the peak of the RSSI series if the beacon is weak Beacon
     func StoreSignalPeakDetection(_ scannedBeacon:iBeacon, _ NowTime:Int64) {
-        //        long nowGetTime = NowGetTime
-        if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(scannedBeacon.minor) == 1) {
+        if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(scannedBeacon.minor) == 1) {//1 is weak beacon; 2 is strong beacon
             if (!(minorNoLongerStore!.contains(scannedBeacon.minor))) {
-                UpdateExistedBeaconSeries(scannedBeacon, NowTime, &StoreScannedBeacon)
-                for (k,v) in StoreScannedBeacon {
+                // When "scannedBeacon" is weak beacon and it not in "minorNoLongerStore", it will be added to "StoreScannedBeacon"
+                UpdateExistedBeaconSeries(scannedBeacon, NowTime, &StoreScannedBeaconWeak)
+                for (k,v) in StoreScannedBeaconWeak {
                     var list:[TimeAverageRSSI] = []
+                    // Only when the info is in "BeaconSignalDetectWindow", they are stored to the "StoreScannedBeacon"
                     for i in 0..<v.count {
-                        if (v[i].time - NowTime > BeaconSignalDetectWindow) {
-                            //v.remove(at:i)
-                        } else {
+                        if (NowTime - v[i].time <= BeaconSignalDetectWindow) {
                             list.append(v[i])
                         }
                     }
-                    StoreScannedBeacon[k] = list
+                    StoreScannedBeaconWeak[k] = list
                 }
-                //                }
-                for (k,v) in StoreScannedBeacon {
-                    if (v.count >= MinWeekBeaconRSSINumber) {//MinWeekBeaconRSSINumber = 3
-                        let timeAverageRSSIResult = GetDatafromExistedBeaconSeriesForWeek(k, StoreScannedBeacon)///actually its the max rssi
+                // When the recorded number is larger than "MinWeakBeaconRSSINumber", store the max rssi of each weak beacon to "StoreTempMaxRSSIofBeacon"
+                for (k,v) in StoreScannedBeaconWeak {
+                    if (v.count >= MinWeakBeaconRSSINumber) {//MinWeakBeaconRSSINumber = 3: Make sure every second have recorded the weak beacon
+                        let timeAverageRSSIResult = GetDatafromExistedBeaconSeriesForWeek(k, StoreScannedBeaconWeak)///actually its the max rssi
                         if let _ = StoreTempMaxRSSIofBeacon[k] {
                             if (timeAverageRSSIResult.RSSI > WeekBeaconRSSIRemoveStrongBeacon && timeAverageRSSIResult.RSSI >= StoreTempMaxRSSIofBeacon[k]!.RSSI) {
                                 StoreTempMaxRSSIofBeacon[k] = timeAverageRSSIResult
@@ -579,14 +592,32 @@ class BeaconScanService {
                     }
                 }
             }
+        }else if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(scannedBeacon.minor) == 2){
+            UpdateExistedBeaconSeries(scannedBeacon, NowTime, &StoreScannedBeaconStrong)
+            for (k,v) in StoreScannedBeaconStrong {
+                var list:[TimeAverageRSSI] = []
+                // Only when the info is in "BeaconSignalDetectWindow", they are stored to the "StoreScannedBeacon"
+                for i in 0..<v.count {
+                    if (NowTime - v[i].time <= BeaconSignalDetectWindow) {
+                        list.append(v[i])
+                    }
+                }
+                StoreScannedBeaconStrong[k] = list
+            }
+            
+        }else{
+        print("Warning: index is not correct!!")
         }
     }
-    
+    /*
+     1.Using 5 seconds to make sure the peak is true
+     2.Using Weak beacon for the localization
+     */
     func SignalPeak(_ NowTime:Int64) {
         var keyTimeSize = KeyTimeSize()
         var rssiMax:Double = -200.0
         var keyValue:Int64 = 0
-        for (k,_) in StoreScannedBeacon {
+        for (k,_) in StoreScannedBeaconWeak {
             if (StoreTempMaxRSSIofBeacon.count != 0) {
                 if let _ = StoreTempMaxRSSIofBeacon[k]{
                     if (NowTime - StoreTempMaxRSSIofBeacon[k]!.time > 5000) {
@@ -601,7 +632,9 @@ class BeaconScanService {
             }
         }
         if (keyValue != 0 && rssiMax > self.WeekBeaconRSSIRemoveStrongBeacon) {
+            // Localization by weak beacon
             let keyLightID = BeaconPositioningAlgorithm.LightID(keyValue)
+            // Store the ID of weak beacon to avoid re-localization
             if (minorNoLongerStore!.contains(keyLightID)) {
             } else {
                 minorNoLongerStore!.append(keyLightID)
@@ -611,7 +644,7 @@ class BeaconScanService {
                 keyTimeSize.returnTime = NowTime
                 findPeak = true
             }
-            StoreScannedBeacon.removeAll()
+            StoreScannedBeaconWeak.removeAll()
             StoreTempMaxRSSIofBeacon.removeAll()
         }
         if (findPeak) {
@@ -622,6 +655,11 @@ class BeaconScanService {
         }
     }
     
+    /*
+     The function to store the scaned "weak" beacons :
+     key is the "minor" (major+minor) of the beacon
+     context is the "timeAverageRSSI": time; rssi
+     */
     func UpdateExistedBeaconSeries(_ scannedBeacon:iBeacon, _ time:Int64, _ StoreScannedBeacon:inout [Int64:[TimeAverageRSSI]]) {
         var list:[TimeAverageRSSI] = []
         var timeAverageRSSI =  TimeAverageRSSI()

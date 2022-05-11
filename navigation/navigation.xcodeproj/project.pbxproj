@@ -582,7 +582,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"navigation/Preview Content\"";
-				DEVELOPMENT_TEAM = 5Q2TQ6G55V;
+				DEVELOPMENT_TEAM = WMT7QEY8MB;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = navigation/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -606,7 +606,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"navigation/Preview Content\"";
-				DEVELOPMENT_TEAM = 5Q2TQ6G55V;
+				DEVELOPMENT_TEAM = WMT7QEY8MB;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = navigation/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;

@@ -147,7 +147,8 @@ class Algorithm
         return SL
     }
     static func MoveToWeekBeaconPosition(_ BeaconUsed:iBeacon, _ DistanceNow:[Double], _ allDistancePast: inout [Double], _ positionNow: inout LatLng, _ positionPast: inout LatLng ) {
-        positionNow = BeaconCoordinates.positionFromBeacon(BeaconUsed.minor)
+        let tempLightID = BeaconPositioningAlgorithm.LightID(BeaconUsed.minor)
+        positionNow = BeaconCoordinates.positionFromBeacon(tempLightID)
         allDistancePast[0] = DistanceNow[0]
         allDistancePast[1] = DistanceNow[1]
         positionPast = positionNow

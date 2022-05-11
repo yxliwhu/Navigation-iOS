@@ -63,6 +63,8 @@ class ViewController: UIViewController , MKMapViewDelegate{
         //Gesture to remove the keyboard
         let tap = UITapGestureRecognizer(target: self, action: #selector(UIInputViewController.dismissKeyboard))
         view.addGestureRecognizer(tap)
+        
+        // The enter point of the project
         startCollectDataset()
     }
     
@@ -117,11 +119,15 @@ class ViewController: UIViewController , MKMapViewDelegate{
             }
         }
     }
-    
+    /*
+     Remove the Makers from the map view
+     */
     @objc func removeMaker(_ btn: UIButton){
         removeRouteformMap()
     }
-    
+    /*
+     Remove the Routes form the map view
+     */
     func removeRouteformMap(){
         var shouldRomove: [MKOverlay] = [ ]
         if !self.mMap!.overlays.isEmpty{
@@ -133,7 +139,9 @@ class ViewController: UIViewController , MKMapViewDelegate{
             self.mMap!.removeOverlays(shouldRomove)
         }
     }
-    
+    /*
+    Add route toe the map view
+     */
     @objc func routerTo(_ btn: UIButton){
         removeRouteformMap()
         let Route1 = MKPolyline(coordinates: locationArrayGPS, count: locationArrayGPS.count)
@@ -150,6 +158,9 @@ class ViewController: UIViewController , MKMapViewDelegate{
         
     }
     
+    /*
+     Setting up for different Makers
+     */
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let annotationView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "MyMarker")
         switch annotation.title!! {
@@ -163,6 +174,9 @@ class ViewController: UIViewController , MKMapViewDelegate{
         return annotationView
     }
     
+    /*
+     Seeting for different route trajectory
+     */
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         
        
@@ -326,17 +340,18 @@ class ViewController: UIViewController , MKMapViewDelegate{
      */
     func motionProcess(){
         let storeFile = FileUtils.urlFile("SensorData")!
+        // Here, get the sensor data from montionhelper then store to the file
         motionHelper.setMdBlock{ (pData) in
             if (self.recordData){
                 let wsContent = self.getSensorWs(pData)
                 FileUtils.writeStrings(storeFile, wsContent)
             }
-            self.stepDetecor!.onSensorChanged(pData)// 算法触发入口
+            self.stepDetecor!.onSensorChanged(pData)// Step Counter 算法触发入口
         }
     }
     
     /*
-     Get the data of motion sensors form "pData"
+     Get the data of motion sensors and store to "pData"
      */
     func getSensorWs(_ data:DeviceData)->[String]{
         var wsContent = [String]()
@@ -392,7 +407,9 @@ class ViewController: UIViewController , MKMapViewDelegate{
             self.stepDetecor?.kalmanPositionDetector.setMagnHeading(self.trueHeaningMagn!.trueHeading)
         }
     }
-    
+    /*
+     Get the data of GPS and sotre to "pData"
+     */
     func getGpsWs(_ data:CLLocation)->[String]{
         var wsContent = [String]()
         let tNow = Int64(data.timestamp.timeIntervalSince1970 * 1000)
@@ -411,6 +428,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
      */
     func bleProcess(){
         self.beaconFile = FileUtils.urlFile("BeaconData")!
+        //Record the BLE data every 0.5 second
         if (self.realTime) {
             self.timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(ViewController.insertBeaconData), userInfo: nil, repeats: true)
         }
@@ -433,9 +451,9 @@ class ViewController: UIViewController , MKMapViewDelegate{
                 let tempIndex = Int(floor(Double(tq) / 1000.0))
                 self.indexPre = tempIndex
             }
-            
             for tIBeacon in pData {
                 var m_beacon = self.toCustomIbeacon(tIBeacon)
+                // Sometimes, the record of rssi is zero, here we treat it as -99 (very week signal)
                 if (m_beacon.rssi == 0){
                     m_beacon.rssi = -99
                 }
@@ -449,8 +467,10 @@ class ViewController: UIViewController , MKMapViewDelegate{
                 }
                 self.stepDetecor?.kalmanPositionDetector.BeaconUsedRecord = true
                 self.stepDetecor?.kalmanPositionDetector.setBeaconUsed(m_beacon)
+                
                 self.stepDetecor?.kalmanPositionDetector.initSensorChange()
 //                self.stepDetecor?.kalmanPositionDetector.calculate()
+                print("TLee3",indexDelta)
                 self.ibeaconScanDataProcess(Int64(indexDelta), m_beacon)
                 
                 if(BeaconPositioningAlgorithm.JugeSingleStrongWeak(m_beacon.minor) == 1){
@@ -483,6 +503,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
     
     /*
      Transform the format of BLE samples
+     Here merge the major and minor to the minor value: 0-4 is major 5-9 is minor
      */
     func toCustomIbeacon(_ ibc: CLBeacon)->iBeacon{
         var ibeacon = iBeacon()
@@ -499,16 +520,25 @@ class ViewController: UIViewController , MKMapViewDelegate{
      */
     func ibeaconScanDataProcess(_ indexDelta:Int64, _ m_beacon: iBeacon){
 //        let scanService = BeaconScanService(m_beacon,self.startTime,self.indexCurrent)
+        
+        
+        // ******modified 2022.05.09: find this code is no used
         self.scanService!.StoreSignalPeakDetection(m_beacon, self.currentTime)
         self.scanService!.SignalPeak(self.currentTime)
-        let KeyDistance:[Int64:[Double]] = BeaconPositioningAlgorithm.CalculateDistanceMapByStrongBeacon(m_beacon, self.scanService!.StoreScannedBeacon)
-        if (KeyDistance.count > 3){
+        // ******modified 2022.05.09: find this code is no use
+        
+        
+        //using strong beacon to get the position
+        let KeyDistance:[Int64:[Double]] = BeaconPositioningAlgorithm.CalculateDistanceMapByStrongBeacon(m_beacon, self.scanService!.StoreScannedBeaconStrong)
+        if (KeyDistance.count >= 3){
+            self.scanService!.StoreScannedBeaconStrong.removeAll()
             let StrongBeaconPosXYTemp = BeaconPositioningAlgorithm.CalculatePositionByDistance(KeyDistance)
             let StrongBeaconPosXY:[Double] =  [StrongBeaconPosXYTemp[0], StrongBeaconPosXYTemp[1], StrongBeaconPosXYTemp[2], StrongBeaconPosXYTemp[3]]
             self.stepDetecor!.getDetector().setStrongBeaconPosXY(StrongBeaconPosXY)
         }
         
         let beaconScanStartTime:Int64 = Int64(Int(self.startTime) + 1000 * self.indexCurrent + 500)
+        print("TLee",indexDelta)
         if (indexDelta < 1) {
             self.scanService!.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
         }
@@ -533,6 +563,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
             }
         }
     }
+    
     /*
      Store the BLE data to the storage
      */
@@ -566,7 +597,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
     }
     
     /*
-    Basic seting for the labels
+    Basic setting for the labels
      */
     func labelUI(label: inout UILabel,text:String,x:Int,y:Int){
         label.frame.size = CGSize(width: 200,height: 30)

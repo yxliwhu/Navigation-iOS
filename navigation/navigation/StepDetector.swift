@@ -81,7 +81,7 @@ class StepDetector {
             
             let axisZAngle = axisConvert[2]
             var MygyroHeading = self.kalmanPositionDetector.getMygyroHeading()
-            print(axisZAngle)
+//            print(axisZAngle)
             MygyroHeading = MygyroHeading + axisZAngle //Gyro integration angle
             self.kalmanPositionDetector.setMygyroHeading(MygyroHeading)
 //            self.kalmanPositionDetector.setMagnHeading(Double(MygyroHeading))
@@ -96,8 +96,7 @@ class StepDetector {
             data.setCompassFilteredAngle(x_angle) //Set filtered angle to data
         }
         
-        
-        let _ = self.getDetector().calculate()
+        self.getDetector().calculate()
     }
 }
 
