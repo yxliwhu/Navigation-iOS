@@ -451,6 +451,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
                 let tempIndex = Int(floor(Double(tq) / 1000.0))
                 self.indexPre = tempIndex
             }
+            let beaconScanStartTime:Int64 = Int64(Int(self.startTime) + 1000 * self.indexCurrent + 500)
             for tIBeacon in pData {
                 var m_beacon = self.toCustomIbeacon(tIBeacon)
                 // Sometimes, the record of rssi is zero, here we treat it as -99 (very week signal)
@@ -470,14 +471,25 @@ class ViewController: UIViewController , MKMapViewDelegate{
                 self.stepDetecor?.kalmanPositionDetector.initSensorChange()
                 self.stepDetecor?.kalmanPositionDetector.calculate(indexUsed: 0)
                 
-                self.ibeaconScanDataProcess(Int64(indexDelta), m_beacon)
                 
-//                if(BeaconPositioningAlgorithm.JugeSingleStrongWeak(m_beacon.minor) == 1){
-//                    self.stepDetecor?.kalmanPositionDetector.weakBeaconForPositioning(m_beacon, (self.stepDetecor?.kalmanPositionDetector.allDistance)!)
-//                }else{
-//                    //do sth when stong beacon come in
-//                }
+                
+                // ******modified 2022.05.09: find this code is no used
+                self.scanService!.StoreSignalPeakDetection(m_beacon, self.currentTime)
+                self.scanService!.SignalPeak(self.currentTime)
+                // ******modified 2022.05.09: find this code is no use
+                self.scanService!.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
+                
+
+                let KeyDistance:[Int64:[Double]] = BeaconPositioningAlgorithm.CalculateDistanceMapByStrongBeacon(m_beacon, self.scanService!.StoreScannedBeaconStrong)
+                if (KeyDistance.count >= 3){
+                    self.scanService!.StoreScannedBeaconStrong.removeAll()
+                    let StrongBeaconPosXYTemp = BeaconPositioningAlgorithm.CalculatePositionByDistance(KeyDistance)
+                    let StrongBeaconPosXY:[Double] =  [StrongBeaconPosXYTemp[0], StrongBeaconPosXYTemp[1], StrongBeaconPosXYTemp[2], StrongBeaconPosXYTemp[3]]
+                    self.stepDetecor!.getDetector().setStrongBeaconPosXY(StrongBeaconPosXY)
+                }
             }
+            self.ibeaconScanDataProcess(Int64(indexDelta), beaconScanStartTime)
+            
         }
     }
 
@@ -517,34 +529,10 @@ class ViewController: UIViewController , MKMapViewDelegate{
     /*
      Function to scan and process the BLE
      */
-    func ibeaconScanDataProcess(_ indexDelta:Int64, _ m_beacon: iBeacon){
-//        let scanService = BeaconScanService(m_beacon,self.startTime,self.indexCurrent)
-        
-        
-        // ******modified 2022.05.09: find this code is no used
-        self.scanService!.StoreSignalPeakDetection(m_beacon, self.currentTime)
-        self.scanService!.SignalPeak(self.currentTime)
-        // ******modified 2022.05.09: find this code is no use
-        
-        
-        //using strong beacon to get the position
-        let KeyDistance:[Int64:[Double]] = BeaconPositioningAlgorithm.CalculateDistanceMapByStrongBeacon(m_beacon, self.scanService!.StoreScannedBeaconStrong)
-        if (KeyDistance.count >= 3){
-            self.scanService!.StoreScannedBeaconStrong.removeAll()
-            let StrongBeaconPosXYTemp = BeaconPositioningAlgorithm.CalculatePositionByDistance(KeyDistance)
-            let StrongBeaconPosXY:[Double] =  [StrongBeaconPosXYTemp[0], StrongBeaconPosXYTemp[1], StrongBeaconPosXYTemp[2], StrongBeaconPosXYTemp[3]]
-            self.stepDetecor!.getDetector().setStrongBeaconPosXY(StrongBeaconPosXY)
-        }
-        
+    func ibeaconScanDataProcess(_ indexDelta:Int64, _ beaconScanStartTime:Int64){
         let beaconScanStartTime:Int64 = Int64(Int(self.startTime) + 1000 * self.indexCurrent + 500)
-        if (indexDelta < 1) {
-            self.scanService!.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
-        }
         
         if (indexDelta >= 1 && indexDelta < 2) {
-            
-            self.scanService!.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
-            
             self.scanService!.updateAverageValues(beaconScanStartTime)
             self.scanService!.BuildStrongBeaconMap()
             self.scanService!.GetNonZeroMap(self.scanService!.StrongBeacon)

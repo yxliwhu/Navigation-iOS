@@ -121,7 +121,7 @@ class KalmanFilterFunction {
             print(error)
         }
         
-        return nil
+        return filterResult
     }
     
     func LULT_Decomposition(_ P:Matrix)->(Matrix,Matrix)? {

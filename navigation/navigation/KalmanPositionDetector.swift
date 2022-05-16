@@ -835,8 +835,7 @@ class KalmanPositionDetector {
             ///Todo: End Part 6------------------------------------------------------------------------
             
             ///Todo: Part 8---- Predict and update without beacon and GPS using prediction observation
-            if (!UseBeaconKF && !UseGPSKF) {//hillday is a bug & ??
-                print("UseBeacon KF and UseGPSKF are false!!!")
+            if (!UseBeaconKF && !UseGPSKF) {
                 var PredictionResult:(Matrix,Matrix)
                 let stepBias = (Double(self.data.getStepNumOwn()) - self.data.getStartStep())
                 if (stepBias == 0) {
