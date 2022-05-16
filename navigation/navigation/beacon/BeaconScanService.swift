@@ -98,9 +98,9 @@ class BeaconScanService {
     /*
      Get average rssi value of each beacon for every second
      This function is not useful for the iOS program beacuse the update frequency is 1Hz
+     Warning: a lot zero value
      */
     func updateAverageValues(_ beaconScanStartTime:Int64) {
-        print("TLee1",self.tempbeaconAverageValues.count)
         if (self.beaconAverageValues.count == 0) {
             for (k,v) in self.tempbeaconAverageValues {
                 let rssiUsed = calculateAverage(v)
@@ -133,10 +133,12 @@ class BeaconScanService {
                     }
                 }
                 for (k,v) in AverageValues1 {
+                    // Temp have, average not have
                     let rssiUsed = calculateAverage(v)
                     UsedputBeaconAverageValues(k, beaconScanStartTime, rssiUsed)
                 }
                 for (k,v) in AverageValues2 {
+                    // Temp have, average have
                     let rssiUsed = calculateAverage(v)
                     UsedputBeaconAverageValues(k, beaconScanStartTime, rssiUsed)
                 }
@@ -148,6 +150,7 @@ class BeaconScanService {
                 }
             }
         }
+        print(tempbeaconAverageValues.count)
         self.tempbeaconAverageValues.removeAll()
     }
     
@@ -202,7 +205,6 @@ class BeaconScanService {
             list.append(timeAverageRSSI)
         }
         self.tempbeaconAverageValues[key] = list
-        print("TLee2",self.tempbeaconAverageValues.count)
     }
     
     func BuildStrongBeaconMap() {
@@ -321,7 +323,7 @@ class BeaconScanService {
         BeaconEndInfo = beaconAverageValues
         
         //Todo: Use record all scanned beacons to calculate heading
-        
+//        printTime()
         if (BeaconEndInfo.count > 0) {
             for (k,v) in BeaconEndInfo {
                 if (v.count != 0) {
@@ -335,8 +337,12 @@ class BeaconScanService {
                     }
                     CloneTimeRSSI = BeaconEndInfo[k]!
                     // When the number less than 15, the operation only for week beacon
+                    
+                    
                     if (v.count > 0 && v.count < WeekBeaconNumber) {//15，weak beacon的list里存放的RSSI值不够15个
+                        
                         if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(k) == 1) {
+//                            print(k,"weak beacon的list里存放的RSSI值:", v.count)
                             let size = CloneTimeRSSI.count
                             var RSSI:[Double] = []
                             for i in 0..<size {
@@ -693,6 +699,17 @@ class BeaconScanService {
         }
         //WriteFile.writeTxtToFilesWithEnter(filePath,fileName+"MAXRSSI.txt","//////////////////////////////////////////////////")
         return timeAverageRSSI
+    }
+    
+    /*
+     Assist function to print time
+     */
+    func printTime(){
+        let date = Date()
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "yyy-MM-dd' at 'HH:mm:ss.SSS"
+        let strNowTime = timeFormatter.string(from: date) as String
+        print(strNowTime)
     }
     
 }
