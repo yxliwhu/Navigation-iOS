@@ -96,7 +96,7 @@ class StepDetector {
             data.setCompassFilteredAngle(x_angle) //Set filtered angle to data
         }
         
-        self.getDetector().calculate()
+        self.getDetector().calculate(indexUsed: 1)
     }
 }
 

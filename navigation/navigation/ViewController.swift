@@ -467,17 +467,16 @@ class ViewController: UIViewController , MKMapViewDelegate{
                 }
                 self.stepDetecor?.kalmanPositionDetector.BeaconUsedRecord = true
                 self.stepDetecor?.kalmanPositionDetector.setBeaconUsed(m_beacon)
-                
                 self.stepDetecor?.kalmanPositionDetector.initSensorChange()
-//                self.stepDetecor?.kalmanPositionDetector.calculate()
-                print("TLee3",indexDelta)
+                self.stepDetecor?.kalmanPositionDetector.calculate(indexUsed: 0)
+                
                 self.ibeaconScanDataProcess(Int64(indexDelta), m_beacon)
                 
-                if(BeaconPositioningAlgorithm.JugeSingleStrongWeak(m_beacon.minor) == 1){
-                    self.stepDetecor?.kalmanPositionDetector.weakBeaconForPositioning(m_beacon, (self.stepDetecor?.kalmanPositionDetector.allDistance)!)
-                }else{
-                    //do sth when stong beacon come in 
-                }
+//                if(BeaconPositioningAlgorithm.JugeSingleStrongWeak(m_beacon.minor) == 1){
+//                    self.stepDetecor?.kalmanPositionDetector.weakBeaconForPositioning(m_beacon, (self.stepDetecor?.kalmanPositionDetector.allDistance)!)
+//                }else{
+//                    //do sth when stong beacon come in
+//                }
             }
         }
     }
@@ -538,7 +537,6 @@ class ViewController: UIViewController , MKMapViewDelegate{
         }
         
         let beaconScanStartTime:Int64 = Int64(Int(self.startTime) + 1000 * self.indexCurrent + 500)
-        print("TLee",indexDelta)
         if (indexDelta < 1) {
             self.scanService!.UsedputtempBeaconAverageValues(m_beacon.minor, beaconScanStartTime, Double(m_beacon.rssi))
         }
