@@ -152,6 +152,7 @@ class Algorithm
         allDistancePast[0] = DistanceNow[0]
         allDistancePast[1] = DistanceNow[1]
         positionPast = positionNow
+        print("move to weak beacon position")
     }
     
     static func CalculatePDRPrecision(_ PDRPrecision:Double,_ DeltaDistance:Double)->Double{

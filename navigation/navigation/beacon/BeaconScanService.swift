@@ -98,7 +98,7 @@ class BeaconScanService {
     /*
      Get average rssi value of each beacon for every second
      This function is not useful for the iOS program beacuse the update frequency is 1Hz
-     Warning: a lot zero value
+     Warning: a lot zero value -> fixed
      */
     func updateAverageValues(_ beaconScanStartTime:Int64) {
         if (self.beaconAverageValues.count == 0) {
@@ -150,10 +150,12 @@ class BeaconScanService {
                 }
             }
         }
-        print(tempbeaconAverageValues.count)
         self.tempbeaconAverageValues.removeAll()
     }
     
+    /*
+     Not meaningful for iOS program, because the count is always equal to 1
+     */
     func calculateAverage(_ list:[TimeAverageRSSI])->Double {
         let count = list.count
         var sumValue:Double = 0.0
@@ -207,26 +209,13 @@ class BeaconScanService {
         self.tempbeaconAverageValues[key] = list
     }
     
+    /*
+     Filter Strong beacon info from "beaconAverageValues" and store to "StrongBeacon"
+     */
     func BuildStrongBeaconMap() {
-        var boolused:Bool = false
-        var sum:Double = 0.0
         for (k,v) in self.beaconAverageValues {
-            if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(k) == 1) {
-                let Size:Int = v.count
-                let LastRSSI:Double = v[Size - 1].RSSI
-                if (LastRSSI > WeekBeaconRSSIRemoveStrongBeacon) {//WeekBeaconRSSIRemoveStrongBeacon = -87
-                    sum += LastRSSI
-                }
-                sum = 0.0
-            }
-            if (sum == 0.0) {
-                for (k,v) in self.beaconAverageValues {
-                    if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(k) == 2 || BeaconPositioningAlgorithm.JugeSingleStrongWeak(k) == 3) {
-                        self.StrongBeacon[k] = v
-                    }
-                }
-            } else {
-                self.ClearStrongBeacon()
+            if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(k) == 2 || BeaconPositioningAlgorithm.JugeSingleStrongWeak(k) == 3) {
+                self.StrongBeacon[k] = v
             }
         }
     }
@@ -253,6 +242,9 @@ class BeaconScanService {
         }
     }
     
+    /*
+     Filter non zero value from strong beacon, here zero values are from sampling missing
+     */
     func GetNonZeroMap(_ beaconMap:[Int64:[TimeAverageRSSI]]) {
         self.NonZeroStrongMap.removeAll()
         for (k,v) in beaconMap {
@@ -269,9 +261,13 @@ class BeaconScanService {
         
     }
     
+    /*
+     Calcualte Rssi change slope of Strong Beacon
+     */
     func CalculateSlope(_ NonZeroStrongMap:[Int64:[TimeAverageRSSI]], _ rawbeaconMap:[Int64:[TimeAverageRSSI]]) {
         for (k,v) in rawbeaconMap {
-            if (v.count == self.StrongBeaconNumber) {//StrongBeaconNumber = 15
+            
+            if (v.count == self.StrongBeaconNumber) {
                 if (self.NonZeroStrongMap[k] != nil && self.NonZeroStrongMap[k]!.count >= self.NonZeroStrongRSSINumber) {//把RSSI=0的值去掉NonZeroStrongRSSINumber = 8
                     var rssi:[Double] = []
                     var time:[Double] = []
@@ -318,12 +314,14 @@ class BeaconScanService {
         
     }
     
+    /*
+     Calculate the Indicator of Week Beacon
+     */
     func CalculateWeekBeaconIndicator() {
         
         BeaconEndInfo = beaconAverageValues
         
         //Todo: Use record all scanned beacons to calculate heading
-//        printTime()
         if (BeaconEndInfo.count > 0) {
             for (k,v) in BeaconEndInfo {
                 if (v.count != 0) {
@@ -338,11 +336,9 @@ class BeaconScanService {
                     CloneTimeRSSI = BeaconEndInfo[k]!
                     // When the number less than 15, the operation only for week beacon
                     
-                    
-                    if (v.count > 0 && v.count < WeekBeaconNumber) {//15，weak beacon的list里存放的RSSI值不够15个
-                        
+                    print(v.count)
+                    if (v.count > 0 && v.count < WeekBeaconNumber) {
                         if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(k) == 1) {
-//                            print(k,"weak beacon的list里存放的RSSI值:", v.count)
                             let size = CloneTimeRSSI.count
                             var RSSI:[Double] = []
                             for i in 0..<size {
