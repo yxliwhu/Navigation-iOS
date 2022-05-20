@@ -175,7 +175,7 @@ class ViewController: UIViewController , MKMapViewDelegate{
     }
     
     /*
-     Seeting for different route trajectory
+     Setting for different route trajectory
      */
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         
