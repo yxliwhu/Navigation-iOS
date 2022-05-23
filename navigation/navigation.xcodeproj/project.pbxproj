@@ -582,7 +582,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"navigation/Preview Content\"";
-				DEVELOPMENT_TEAM = WMT7QEY8MB;
+				DEVELOPMENT_TEAM = 5Q2TQ6G55V;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = navigation/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -590,7 +590,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.yaxin.navigation;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yaxin.lsgi.navigation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -606,7 +606,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"navigation/Preview Content\"";
-				DEVELOPMENT_TEAM = WMT7QEY8MB;
+				DEVELOPMENT_TEAM = 5Q2TQ6G55V;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = navigation/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -614,7 +614,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.yaxin.navigation;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yaxin.lsgi.navigation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;

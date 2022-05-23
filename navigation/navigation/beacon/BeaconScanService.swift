@@ -26,7 +26,7 @@ class BeaconScanService {
     var StrongBeacon:[Int64:[TimeAverageRSSI]]
     var NonZeroStrongMap:[Int64:[TimeAverageRSSI]]
     var minorSlope:[Int64:Double]
-    var IndicatorMap:[Int64:[Double]]
+    var weakIndicatorMap:[Int64:[Double]]
     var StrongBeaconKeyIndicator:[Int64:Double]
     var PreIndicatorHashmap:[Int64:Int64]
     var count:Int = 0
@@ -73,7 +73,7 @@ class BeaconScanService {
         self.StoreScannedBeaconStrong = [:]
         self.StoreTempMaxRSSIofBeacon = [:]
         self.minorSlope = [Int64:Double]()
-        self.IndicatorMap = [Int64:[Double]]()
+        self.weakIndicatorMap = [Int64:[Double]]()
         self.StrongBeaconKeyIndicator = [Int64:Double]()
         self.PreIndicatorHashmap = [Int64:Int64]()
         self.minorNoLongerStore = [Int64]()
@@ -85,7 +85,7 @@ class BeaconScanService {
     
     func ClearWeekBeacon() {
         self.beaconAverageValues.removeAll()
-        self.IndicatorMap.removeAll()
+        self.weakIndicatorMap.removeAll()
     }
     
     func ClearStrongBeacon() {
@@ -336,7 +336,6 @@ class BeaconScanService {
                     CloneTimeRSSI = BeaconEndInfo[k]!
                     // When the number less than 15, the operation only for week beacon
                     
-                    print(v.count)
                     if (v.count > 0 && v.count < WeekBeaconNumber) {
                         if (BeaconPositioningAlgorithm.JugeSingleStrongWeak(k) == 1) {
                             let size = CloneTimeRSSI.count
@@ -385,7 +384,7 @@ class BeaconScanService {
                         TimeIndicatorArrayList.append(Double(PreIndicator))
                         TimeIndicatorArrayList.append(Double(NowIndicator))
                         //  Log.w("IndicatorMap", "" + vo.getKey() + "," + NowIndicator)
-                        IndicatorMap[k] = TimeIndicatorArrayList
+                        weakIndicatorMap[k] = TimeIndicatorArrayList
                         //todo:set pre-Indicator value
                         PreIndicatorHashmap[k] =  NowIndicator
                         //todo: clear the current device's 15 RSSI value, ready for next device
@@ -430,9 +429,9 @@ class BeaconScanService {
     }
     // Test codes end *********************************************************************
     func MergeHeadingANDClearData() {
-        if (IndicatorMap.count >= 2) {//至少存储了两个weak beacon的信息
+        if (weakIndicatorMap.count >= 2) {//至少存储了两个weak beacon的信息
             let calculateWeekBeaconHeading = CalculateWeekBeaconHeading()
-            WeekHeading = calculateWeekBeaconHeading.CalculateHeadingByIndicator(StartTime, fileName, IndicatorMap)
+            WeekHeading = calculateWeekBeaconHeading.CalculateHeadingByIndicator(StartTime, fileName, weakIndicatorMap)
             recordScanningData(WeekHeading, ";  from Weak Beacon")
         }
         if (StrongBeaconKeyIndicator.count >= 2) {

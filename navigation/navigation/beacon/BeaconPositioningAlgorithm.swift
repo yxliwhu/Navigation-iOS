@@ -32,6 +32,10 @@ struct TimeAverageRSSI {
 
 class BeaconPositioningAlgorithm {
     //This is the other rssi-distance model algorithm
+    
+    /*
+     This function not used in iOS version
+     */
     static func rss_cal_distance_all(_ rss:Double, _ index:Double) -> Double{
         var distance = 0.0
         //Middle single beacon
@@ -404,8 +408,9 @@ class BeaconPositioningAlgorithm {
         return resVal //Return strong beacon X, Y and Covariance
     }
     
-    
-    // Check the paramters please (sometimes the distance value is negative)
+    /*
+     Check the paramters please (sometimes the distance value is negative)
+     */
     static func CalculateDistanceByRSSI(_ Key:Int64, _ RSSI:Double) -> Double{
         let Beaconminor = BeaconPositioningAlgorithm.JugeSingleStrongWeak(Key)
         var a = 1.0
@@ -426,6 +431,7 @@ class BeaconPositioningAlgorithm {
         let distance = a + b * (exp(c * RSSI))
         return distance
     }
+    
     /*
      Function: Using strong beacon rssi records to calculated distances
      */

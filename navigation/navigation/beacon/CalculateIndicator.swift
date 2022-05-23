@@ -9,6 +9,13 @@ import Foundation
 
 var rssiThreshold: Double = -88.0
 
+
+/*
+ Return:
+ result = -1: stay away from an known weak beacon
+ result = 0: not get beacon info yet
+ result = 1: near to the weak beacon
+ */
 class CalculateIndicator {
     
     static func WeekIndicator(_ PreIndicator: Int64,_ rssiList: [Double], _ WeekBeaconRSSINumberForIndex: Int)->Int64{
@@ -60,6 +67,10 @@ class CalculateIndicator {
         return WeekIndicator
     }
     
+    /*
+     Return "false" when received the beacon
+     Return "ture" when not received the beacon
+     */
     static func judgeIsNaN(_ rssimap:[Int:Double])->Bool{
         var index=true
         for (_,v) in rssimap{
@@ -71,6 +82,12 @@ class CalculateIndicator {
         return index
     }
     
+    /*
+     Return:
+     result = -1: stay away from an known strong beacon
+     result = 0: cannot make sure the status
+     result = 1: close to the known strong beacon
+     */
     static func StrongIndicator(_ minorSlope:[Int64:Double],_ StrongBeaconKeyIndicator:inout [Int64:Double],_ StrongBeaconSlopeIndexPlus: Double, _ StrongBeaconSlopeIndexMius: Double )->[Int64:Double]{
         for (k,v) in  minorSlope{
             let slope = v

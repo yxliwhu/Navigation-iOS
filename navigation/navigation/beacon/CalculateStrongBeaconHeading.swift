@@ -70,6 +70,7 @@ class CalculateStrongBeaconHeading {
         var MinusIndicator = [Int64:Double]()
         var PlusIndicator = [Int64:Double]()
         for(k,v) in  LightIndicator{
+//            print(k,"--",v)
             if(v == 0){
                 // do nothing due to program could not judge close or leave beacon
             }
