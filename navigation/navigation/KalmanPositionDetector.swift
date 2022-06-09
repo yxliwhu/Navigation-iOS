@@ -55,7 +55,7 @@ class KalmanPositionDetector {
     var StrongBeaconPosXY = [Double]()
     var PreStrongBeaconPosXY = [Double]()
     var initialHeading:Float = -800.0//16.5  11.4
-    var data:Data
+    var data:myData
     var StrongBeaconHeadingIndex:Double = 0.0
     var WeekBeaconHeadingIndex:Double = 0.0
     var GetGPSTime:Int64 = 0
@@ -158,7 +158,7 @@ class KalmanPositionDetector {
     var BiasOfHeadingBeaconHeadig:Double = 30.0
     var stepUsed:Double = 0.0
     
-    init(_ data:inout Data,_ userHeight:String,_ realtime:Bool){
+    init(_ data:inout myData,_ userHeight:String,_ realtime:Bool){
         self.data = data
         self.userHeight = userHeight
         self.Realtime = realtime
@@ -370,7 +370,7 @@ class KalmanPositionDetector {
         }
     }
     
-    func getInitialPosition(_ data_p:Data, _ BeaconUsed_p:iBeacon, _ DistanceNow:[Double]) -> Bool{
+    func getInitialPosition(_ data_p:myData, _ BeaconUsed_p:iBeacon, _ DistanceNow:[Double]) -> Bool{
         if (!self.weakBeaconForPositioning(BeaconUsed_p,DistanceNow)){
             return self.weakBeaconForPositioning(BeaconUsed_p,DistanceNow)
         }else if (!self.GPSforPositioning(data_p, DistanceNow)){
@@ -453,7 +453,7 @@ class KalmanPositionDetector {
      Using GPS for the Initial positioning
      Return: "true" for not get position; "false" for get position
      */
-    func GPSforPositioning (_ data_p: Data, _ DistanceNow:[Double]) -> Bool{
+    func GPSforPositioning (_ data_p: myData, _ DistanceNow:[Double]) -> Bool{
         var result: Bool = true
         if (self.currentIndex > 3) {
             if (data_p.getGPSlocation()!.coordinate.latitude != -1 && data_p.getGPSlocation()!.coordinate.longitude != -1) {
@@ -473,7 +473,7 @@ class KalmanPositionDetector {
     /*
      Main function for localization (when not initial)
      */
-    func CalculatePosition(_ data_p:Data, _ DistanceNow:[Double],
+    func CalculatePosition(_ data_p:myData, _ DistanceNow:[Double],
                            _ DistancePast: [Double], _ PastPos:LatLng, _ beaconUsed:iBeacon, _ CurrentTime_p:Int64) {
 
         // update location info from different source
@@ -896,7 +896,7 @@ class KalmanPositionDetector {
     /*
      Location calcualte based on GPS and PDR
      */
-    func CalculatePosUseGPSOnly(_ data_p:Data, _ DistanceNow:[Double],
+    func CalculatePosUseGPSOnly(_ data_p:myData, _ DistanceNow:[Double],
                                 _ allDistancePast: [Double]) {
         if (self.CorrectedPos.latitude != -1 && CorrectedPos.longitude != 0) {
             //DGPS Position is not null
@@ -995,7 +995,7 @@ class KalmanPositionDetector {
     /*
      Calcuate the heading info
      */
-    func calculateDistanceChanged(_ data_p:Data) {
+    func calculateDistanceChanged(_ data_p:myData) {
         ///todo: Angle fusion using compass filtered angle, gyro cumulative angle and beacon angle
         if (self.initialHeading == -800) {
             if (data_p.getCompassFilteredAngle() != 0) {

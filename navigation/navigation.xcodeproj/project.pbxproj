@@ -16,7 +16,7 @@
 		24107DEF25BE82A90057F591 /* LatLng.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24107DEE25BE82A90057F591 /* LatLng.swift */; };
 		24107DF725BE93100057F591 /* BeaconCoordinates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24107DF625BE93100057F591 /* BeaconCoordinates.swift */; };
 		24107DFC25BE9D110057F591 /* IBeaconClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24107DFB25BE9D110057F591 /* IBeaconClass.swift */; };
-		24107E0125BEC3EA0057F591 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24107E0025BEC3EA0057F591 /* Data.swift */; };
+		24107E0125BEC3EA0057F591 /* myData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24107E0025BEC3EA0057F591 /* myData.swift */; };
 		24107E0625BECE890057F591 /* Transformate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24107E0525BECE890057F591 /* Transformate.swift */; };
 		24107E0E25BEDB430057F591 /* Algorithm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24107E0D25BEDB430057F591 /* Algorithm.swift */; };
 		24107E1325BEF4420057F591 /* SimpleRegression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24107E1225BEF4420057F591 /* SimpleRegression.swift */; };
@@ -78,7 +78,7 @@
 		24107DEE25BE82A90057F591 /* LatLng.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatLng.swift; sourceTree = "<group>"; };
 		24107DF625BE93100057F591 /* BeaconCoordinates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeaconCoordinates.swift; sourceTree = "<group>"; };
 		24107DFB25BE9D110057F591 /* IBeaconClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IBeaconClass.swift; sourceTree = "<group>"; };
-		24107E0025BEC3EA0057F591 /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
+		24107E0025BEC3EA0057F591 /* myData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = myData.swift; sourceTree = "<group>"; };
 		24107E0525BECE890057F591 /* Transformate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transformate.swift; sourceTree = "<group>"; };
 		24107E0D25BEDB430057F591 /* Algorithm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Algorithm.swift; sourceTree = "<group>"; };
 		24107E1225BEF4420057F591 /* SimpleRegression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleRegression.swift; sourceTree = "<group>"; };
@@ -240,7 +240,7 @@
 			isa = PBXGroup;
 			children = (
 				24107DEE25BE82A90057F591 /* LatLng.swift */,
-				24107E0025BEC3EA0057F591 /* Data.swift */,
+				24107E0025BEC3EA0057F591 /* myData.swift */,
 				24107E4725C0332F0057F591 /* StepBean.swift */,
 			);
 			path = model;
@@ -403,7 +403,7 @@
 				24107E2425BEFB8C0057F591 /* LUDecomposition.swift in Sources */,
 				24107E4D25C044670057F591 /* KalmanPositionDetector.swift in Sources */,
 				24107E1325BEF4420057F591 /* SimpleRegression.swift in Sources */,
-				24107E0125BEC3EA0057F591 /* Data.swift in Sources */,
+				24107E0125BEC3EA0057F591 /* myData.swift in Sources */,
 				24107DFC25BE9D110057F591 /* IBeaconClass.swift in Sources */,
 				24107E2625BEFB8C0057F591 /* EigenvalueDecomposition.swift in Sources */,
 				24107E5725C29B6F0057F591 /* MotionHelper.swift in Sources */,

@@ -10,13 +10,13 @@ import Foundation
 class StepDetector {
     
     var Realtime:Bool
-    var data:Data
+    var data:myData
     var userHeight:String
     var kalmanPositionDetector:KalmanPositionDetector
     var MygyroHeading: Float = 0.0
     
     init(_ userHeight:String,_ realtime:Bool){
-        self.data = Data()
+        self.data = myData()
         self.userHeight = userHeight
         self.Realtime = realtime
         self.kalmanPositionDetector =  navigation.KalmanPositionDetector(&self.data,userHeight,self.Realtime)

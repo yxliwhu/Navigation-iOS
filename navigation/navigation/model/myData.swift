@@ -8,7 +8,7 @@
 import Foundation
 import CoreLocation
 
-class Data {
+class myData {
     var accX:Float
     var accY:Float
     var accZ:Float
